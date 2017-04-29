@@ -8,7 +8,7 @@ Feedback is very welcome in order to improve and battle-harden this module, howe
 ## Its a JSON-in / JSON-out NSS service
 In a nutshell, the Name Switch Service is a facility in Linux systems that handles different kinds of data lookup requests.
 Most prominently, user, group and password lookups are handled by the NSS.
-For details you may want to consult the (https://en.wikipedia.org/wiki/Name_Service_Switch)[Wikipedia arcticle].
+For details you may want to consult the [Wikipedia arcticle](https://en.wikipedia.org/wiki/Name_Service_Switch).
 There are NSS modules for LDAP, Active Directory, MYSQL, Postgres, and whatnot, which all implement a certain set of C functions.
 The exercise of this project is to provide a simple extension point for connecting handers written in arbitrary languages to the NSS.
 We do this by simply delegating all NSS requests as *JSON documents* to *function* which is expected to reply with appropriate *JSON* document repsonse.
@@ -25,16 +25,17 @@ curl a JSON file in a private GitHub repo.
 Whether this is a feasibile approach from security and performance perspectives has yet to be determined.
 
 ## Building
+Enter the `libnss-json` folder.
 
-* `make`: This compiles the files in `src` and creates a `libnss_json.so.2` in the `target` folder.
+* `make`: Run this to compile the files in `src` and create a `libnss_json.so.2` in the `target` folder.
 
 If make yields an error, please report an issue.
 
 ## Installing
 
-*First of all, make sure you have an open terminal where you are root!* You can easily disable the nss-json service as root, but you may not be able to make yourself root if something goes wrong.
+**First of all, make sure you have an open terminal where you are root!** You can easily disable the nss-json service as root, but you may not be able to make yourself root if something goes wrong.
 
-* `make install`: This copies the `libnss_json.so.2` to /lib and runs `ldconfig`. At this point, no harm should be caused.
+* `make install`: This copies the `libnss_json.so.2` to `/lib` and runs `ldconfig`. At this point, no harm should be caused.
 
 ### Enabling the service
 
@@ -75,7 +76,7 @@ You should see output such as:
 
 ## Files
 
-This project a copy of DaveGamble's (cJSON as of this commit)[https://github.com/DaveGamble/cJSON/tree/05f75e360bf047de359cfce0581a93ea857a0a72].
+This project a copy of DaveGamble's [cJSON as of this commit](https://github.com/DaveGamble/cJSON/tree/05f75e360bf047de359cfce0581a93ea857a0a72).
 
 * `nss-json.h`: Header file only defining the `int _nss_json_handle_request(const *cJSON *const requestJson, cJSON** result)` function for which an implementation must be provided
 * `nss-json.c': Core implementation that delegates all call to the handle json request function mentioned above.
