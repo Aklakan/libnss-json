@@ -1,0 +1,18 @@
+#!/usr/bin/python
+
+import sys
+import json
+#from pprint import pprint
+
+
+x = json.loads(sys.argv[1])
+#x = json.loads('{"request": "getpwnam", "name": "Yoda" }')
+
+#pprint(x)
+
+if (x['request'] == 'getpwnam' and x['name'] == "Yoda") or (x['request'] == 'getpwuid' and x['uid'] == 100000):
+  print '{"name": "Yoda", "passwd": "foobar", "uid":10000, "gid":10000, "gecos": "foobar", "dir": "/home/Yoda", "shell": "/bin/bash"}'
+  exit(1)
+else:
+  exit(0)
+
