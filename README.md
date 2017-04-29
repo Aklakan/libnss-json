@@ -13,7 +13,7 @@ There are NSS modules for LDAP, Active Directory, MYSQL, Postgres, and whatnot, 
 The exercise of this project is to provide a simple extension point for connecting handlers written in arbitrary languages to the NSS.
 This project does that by simply delegating all NSS requests as *JSON documents* to a single *function* which is expected to reply with an appropriate *JSON* document repsonse.
 
-In short: Its JSON in / Json out!
+In short: Its JSON in / JSON out!
 
 The module ships with an implementation of that function which delegates to an *executable* - `/etc/nss-json`: The json request is passed an the only argument, and
 the output to STDOUT is parsed as JSON again. The process exit code is mapped to the NSS error codes.
