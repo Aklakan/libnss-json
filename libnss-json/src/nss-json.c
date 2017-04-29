@@ -24,8 +24,8 @@
 #define NSS_NAME     "name"
 #define NSS_UID      "uid"
 
-#define NSS_GETPWNAM "getwpnam"
-#define NSS_GETPWUID "getwpuid"
+#define NSS_GETPWNAM "getpwnam"
+#define NSS_GETPWUID "getpwuid"
 
 
 void cleanup(cJSON* requestJson, cJSON* resultJson) {
