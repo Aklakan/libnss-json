@@ -1,4 +1,4 @@
-Name Switch Service (NSS) JSON Binding Module
+#Name Switch Service (NSS) JSON Binding Module
 
 ## You have been warned - don't blame me if you mess up your system!
 As of now, this is a prototype implementation in 'works for me' state on my Ubuntu 16.04 machine.
