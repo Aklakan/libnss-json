@@ -76,7 +76,7 @@ You should see output such as:
 
 ## Files
 
-This project a copy of DaveGamble's [cJSON as of this commit](https://github.com/DaveGamble/cJSON/tree/05f75e360bf047de359cfce0581a93ea857a0a72).
+This project includes a copy of DaveGamble's [cJSON as of this commit](https://github.com/DaveGamble/cJSON/tree/05f75e360bf047de359cfce0581a93ea857a0a72).
 
 * `nss-json.h`: Header file only defining the `int _nss_json_handle_request(const *cJSON *const requestJson, cJSON** result)` function for which an implementation must be provided
 * `nss-json.c': Core implementation that delegates all call to the handle json request function mentioned above.
@@ -85,5 +85,9 @@ This project a copy of DaveGamble's [cJSON as of this commit](https://github.com
 * `nss-json-bindings.c': Implementation of the json bindings
 * `cJSON-utils.c`: A few helper functions that made my life easier.
 * `cJSON-utils.h`: The corresponding headers.
+
+## Acknowledgements
+
+Source code is largely derived from this [nss-pgsql module](https://github.com/jandd/libnss-pgsql).
 
 
