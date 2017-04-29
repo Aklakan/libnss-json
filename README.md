@@ -38,6 +38,13 @@ If make yields an error, please report an issue.
 
 ### Enabling the service
 
+* Create an example `nss-json` executable which logs all requests to `/tmp/nss-json-test.txt` by running the following commands:
+
+```bash
+echo 'echo "$0 was called $1" >> /tmp/nss-json-test.txt' | sudo tee -a /etc/nss-json
+sudo chmod +x /etc/nss-json
+```
+
 * Open the file `/etc/nsswitch.conf` with the editor of your choice and add `json` to e.g. passwd. If you open a fresh terminal and type `sudo su`, you should already see some debug output in action.
 
 
@@ -47,6 +54,23 @@ group:          compat
 shadow:         compat
 ```
 
+* When you run
+```bash
+cat /tmp/nss-json-test.txt
+```
+
+You should see output such as:
+
+```
+/etc/nss-json got called with {
+	"request":	"getwpnam",
+	"name":	"myusername"
+}
+/etc/nss-json got called with {
+	"request":	"getwpnam",
+	"name":	"root"
+}
+```
 
 
 ## Files
