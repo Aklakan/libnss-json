@@ -10,8 +10,8 @@ In a nutshell, the Name Switch Service is a facility in Linux systems that handl
 Most prominently, user, group and password lookups are handled by the NSS.
 For details you may want to consult the [Wikipedia arcticle](https://en.wikipedia.org/wiki/Name_Service_Switch).
 There are NSS modules for LDAP, Active Directory, MYSQL, Postgres, and whatnot, which all implement a certain set of C functions.
-The exercise of this project is to provide a simple extension point for connecting handers written in arbitrary languages to the NSS.
-We do this by simply delegating all NSS requests as *JSON documents* to *function* which is expected to reply with appropriate *JSON* document repsonse.
+The exercise of this project is to provide a simple extension point for connecting handlers written in arbitrary languages to the NSS.
+This project does that by simply delegating all NSS requests as *JSON documents* to a single *function* which is expected to reply with an appropriate *JSON* document repsonse.
 
 In short: Its JSON in / Json out!
 
