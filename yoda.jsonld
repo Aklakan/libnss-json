@@ -15,7 +15,7 @@
     "name": "yoda",
     "passwd": "yoda",
     "http://example.org/server": "qrowd",
-    "member": [
+    "members": [
       "yoda",
       "test"
     ],
