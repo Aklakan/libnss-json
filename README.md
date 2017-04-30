@@ -19,12 +19,12 @@ Most prominently, user, group and password lookups are handled by the NSS.
 For details you may want to consult the [Wikipedia article](https://en.wikipedia.org/wiki/Name_Service_Switch).
 There are NSS modules for LDAP, Active Directory, MYSQL, Postgres, and whatnot, which all implement a certain set of C functions.
 The exercise of this project is to provide a simple extension point for connecting handlers written in arbitrary languages to the NSS.
-This project does that by simply delegating all NSS requests as *JSON documents* to a single *function* which is expected to reply with an appropriate *JSON* document repsonse.
+This project does that by simply delegating all NSS requests as *JSON documents* to a single *function* whose implementation is is expected to reply with an appropriate *JSON* document repsonse. Well, **or the implementation can be so dumb to just returns a JSON array of items and let the caller pick the approriate item**.
 
 In short: Its JSON in / JSON out!
 
 The module ships with an implementation of that function which delegates to an *executable* - `/etc/nss-json`: The json request is passed as the only argument, and
-the output to STDOUT is parsed as JSON again. The process exit code is mapped to the NSS error codes.
+the output to STDOUT is parsed as JSON again. The process is expected to return 0 on success.
 
 So with this module, you can now just plug in a bash, NodeJS, JavaScript, Java or whatever script to handle the requests. For example, you could just
 curl a JSON file in a private GitHub repo.
@@ -50,12 +50,10 @@ If make yields an error, please report an issue.
 ```bash
 #!/bin/sh
 
+# Just return JSON - libnss-json will pick out what matches its requests
 echo '[{ "name": "yoda", "passwd": "foobar", "uid":10000, "gid":10000, "gecos": "foobar", "dir": "/home/yoda", "shell": "/bin/bash" }, {"name": "yoda", "passwd": "foobar", "gid": 10000, "members": ["yoda"] } ]'
-
-* You may now ask **WAIT! I see the output JSON, but where is the request handled?**. The answer is, whether you return a single json object or a json array, `nss-json` does built in filtering according to the requested entry. So you can return exactly the queried object or just return a JSON array holding everything and both will work. See the JSON Models section for by which rules objects are discriminated from each other.
-
-
 ```
+
 * Make the file executable
 
 ```bash
