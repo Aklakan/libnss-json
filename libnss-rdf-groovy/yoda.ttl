@@ -1,6 +1,8 @@
-PREFIX nss: <http://example.org/nss/>
-PREFIX u: <http://example.org/resource/user/>
-PREFIX g: <http://example.org/resource/group/>
+@prefix nss: <http://example.org/nss/> .
+@prefix u: <http://example.org/resource/user/> .
+@prefix g: <http://example.org/resource/group/> .
+
+@prefix ex: <http://example.org/> .
 
 u:Yoda
   a nss:User ;
@@ -11,6 +13,7 @@ u:Yoda
   nss:gecos: "foobar" ;
   nss:dir "/home/yoda" ;
   nss:shell "/bin/bash" ;
+  ex:server "qrowd" ;
   .
 
 g:Yoda
@@ -19,6 +22,7 @@ g:Yoda
   nss:passwd "yoda" ;
   nss:gid 10000 ;
   nss:member "yoda", "test" ;
+  ex:server "qrowd" ;
   .
   
   
