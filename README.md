@@ -60,11 +60,13 @@ else:
   exit(0)
 ```
 
- * Make the file executable
+* Make the file executable
 
 ```bash
-sudo chmod a+x /etc/nss-json
+sudo chmod chmod 755 /etc/nss-json
 ```
+
+* Note, that this file **must** be executable. If this file contains sensitive information (e.g. a password) you probably want to make it `511` (executable but neither read- nor writable), but this will not work for script languages where the interpreter reads the file under the user's rights.
 
 * Run the `test-nss-json` tool created by `make` to make sure everything is in place so far.
 
