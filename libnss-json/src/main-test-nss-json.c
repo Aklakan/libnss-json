@@ -17,10 +17,11 @@ int test_getpwnam(const char * const name)
     int errnop;
     char buffer[4096];
     struct passwd x;
-    cJSON* json = cJSON_CreateObject();
+    cJSON* json;
     enum nss_status status = _nss_json_getpwnam_r(name, &x, buffer, sizeof(buffer), &errnop);
 
     if(status == NSS_STATUS_SUCCESS) {
+        json = cJSON_CreateObject();
         pwd2json(&x, json);
         cJSON_PrintPreallocated(json, buffer, sizeof(buffer), 0);
         printf("Data at test result: %s\n", buffer);
@@ -38,10 +39,11 @@ int test_getpwuid(int uid)
     int errnop;
     char buffer[4096];
     struct passwd x;
-    cJSON* json = cJSON_CreateObject();
+    cJSON* json;
     enum nss_status status = _nss_json_getpwuid_r(uid, &x, buffer, sizeof(buffer), &errnop);
 
     if(status == NSS_STATUS_SUCCESS) {
+        json = cJSON_CreateObject();
         pwd2json(&x, json);
         cJSON_PrintPreallocated(json, buffer, sizeof(buffer), 0);
         printf("Data at test result: %s\n", buffer);
@@ -60,10 +62,11 @@ int test_getgrnam(const char * const name)
     int errnop;
     char buffer[4096];
     struct group x;
-    cJSON* json = cJSON_CreateObject();
+    cJSON* json;
     enum nss_status status = _nss_json_getgrnam_r(name, &x, buffer, sizeof(buffer), &errnop);		
 
     if(status == NSS_STATUS_SUCCESS) {
+        json = cJSON_CreateObject();
         grp2json(&x, json);
         cJSON_PrintPreallocated(json, buffer, sizeof(buffer), 0);
         printf("Data at test result: %s\n", buffer);
@@ -82,10 +85,11 @@ int test_getgrgid(int gid)
     int errnop;
     char buffer[4096];
     struct group x;
-    cJSON* json = cJSON_CreateObject();
+    cJSON* json;
     enum nss_status status = _nss_json_getgrgid_r(gid, &x, buffer, sizeof(buffer), &errnop);		
 
     if(status == NSS_STATUS_SUCCESS) {
+        json = cJSON_CreateObject();
         grp2json(&x, json);
         cJSON_PrintPreallocated(json, buffer, sizeof(buffer), 0);
         printf("Data at test result: %s\n", buffer);
@@ -98,7 +102,7 @@ int test_getgrgid(int gid)
 }
 
 
-
+/*
 int testRoundTrip1()
 {
     cJSON* json;
@@ -123,9 +127,18 @@ int testRoundTrip1()
 
     return 0;
 }
-
+*/
 
 int performTestRun() {
+
+    // Make sure there is no memory leak in the third party library
+    //const char* str = "";
+    //cJSON* str = "{'a': 'b', 'c': ['d', 'e', 123 ] }";
+    //cJSON* json = cJSON_Parse(str);
+    //cJSON_Delete(json);
+    //printf("Parse and delete...");
+
+
     test_getpwnam("yoda");
     test_getpwuid(10000);
 

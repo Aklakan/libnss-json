@@ -44,7 +44,7 @@ char* read_data(FILE *fp) {
  * Therefore this pointer to the pointer argument.
  *
  * @return The exit code of the process
- * @param outJson Address of the pointer which to set to the JSON object
+ * @param outJson Address of the pointer which to set to the JSON object; NULL if failed to parse
  * @param cmd The command to execute
  */
 int read_json(cJSON** outJson, const char * const cmd) {
@@ -81,6 +81,7 @@ int _nss_json_handle_request(const cJSON * const requestJson, cJSON** responseJs
 
     char buf[2048];
     // TODO Escape single quotes...
+    // TODO Allocate buffer dynamically
     snprintf(buf, sizeof(buf), "%s '%s'", CFGFILE, rendered);
     free(rendered);
     //printf("Request Call: %s", buf);
