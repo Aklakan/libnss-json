@@ -1,0 +1,23 @@
+#!/usr/bin/python
+
+import sys
+import json
+
+arg = sys.argv[1]
+x = json.loads(arg)
+
+#with open('/tmp/nss-json-test.txt', 'a') as file:
+#    file.write(sys.argv[0] + " was invoked with " + arg)
+
+#x = json.loads('{"request": "getpwnam", "name": "Yoda" }')
+
+
+if (x['request'] == 'getpwnam' and x['name'] == "yoda") or (x['request'] == 'getpwuid' and x['uid'] == 10000):
+  print '{"name": "yoda", "passwd": "foobar", "uid":10000, "gid":10000, "gecos": "foobar", "dir": "/home/yoda", "shell": "/bin/bash"}'
+  exit(1)
+elif(x['request'] == 'getgrnam' and x['name'] == "yoda") or (x['request'] == 'getgrgid' and x['gid'] == 10000):
+  print '{"name": "yoda", "passwd": "foobar", "gid": 10000, "members": ["yoda"] }'
+  exit(1)
+else:
+  exit(0)
+

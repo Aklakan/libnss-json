@@ -8,7 +8,7 @@ Feedback is very welcome in order to improve and battle-harden this module, howe
 ## Its a JSON-in / JSON-out NSS service
 In a nutshell, the Name Switch Service is a facility in Linux systems that handles different kinds of data lookup requests.
 Most prominently, user, group and password lookups are handled by the NSS.
-For details you may want to consult the [Wikipedia arcticle](https://en.wikipedia.org/wiki/Name_Service_Switch).
+For details you may want to consult the [Wikipedia article](https://en.wikipedia.org/wiki/Name_Service_Switch).
 There are NSS modules for LDAP, Active Directory, MYSQL, Postgres, and whatnot, which all implement a certain set of C functions.
 The exercise of this project is to provide a simple extension point for connecting handlers written in arbitrary languages to the NSS.
 This project does that by simply delegating all NSS requests as *JSON documents* to a single *function* which is expected to reply with an appropriate *JSON* document repsonse.
@@ -27,32 +27,71 @@ Whether this is a feasibile approach from security and performance perspectives 
 ## Building
 Enter the `libnss-json` folder.
 
-* `make`: Run this to compile the files in `src` and create a `libnss_json.so.2` in the `target` folder.
+* Simply run `make`. This builds the project from the `src` folder and puts the artifacts into `target`. It runs the following two sub targets:
+* `make test`: Creates the `test-nss-json` executable which runs example user/group requests to your `/etc/nss-json` via the nss api.
+* `make lib`: Builds the `libnss_json.so.2` library.
+* `make install`: This copies the `libnss_json.so.2` to `/lib` and runs `ldconfig`. At this point, no harm should be caused.
 
 If make yields an error, please report an issue.
 
-## Installing
-
-**First of all, make sure you have an open terminal where you are root!** You can easily disable the nss-json service as root, but you may not be able to make yourself root if something goes wrong.
-
-* `make install`: This copies the `libnss_json.so.2` to `/lib` and runs `ldconfig`. At this point, no harm should be caused.
 
 ### Enabling the service
+
+* Create simple `/etc/nss-json` file which handles the requests. The following example allows the user 'yoda' to log in.
+You can also copy `example-nss-json-yoda` file included in this repo.
+
+```python
+#!/usr/bin/python
+
+import sys
+import json
+
+arg = sys.argv[1]
+x = json.loads(arg)
+
+# Lets allow yoda to log in
+if (x['request'] == 'getpwnam' and x['name'] == "yoda") or (x['request'] == 'getpwuid' and x['uid'] == 10000):
+  print '{"name": "yoda", "passwd": "foobar", "uid":10000, "gid":10000, "gecos": "foobar", "dir": "/home/yoda", "shell": "/bin/bash"}'
+  exit(1)
+elif(x['request'] == 'getgrnam' and x['name'] == "yoda") or (x['request'] == 'getgrgid' and x['gid'] == 10000):
+  print '{"name": "yoda", "passwd": "foobar", "gid": 10000, "members": ["yoda"] }'
+  exit(1)
+else:
+  exit(0)
+```
+
+ * Make the file executable
+
+```bash
+sudo chmod a+x /etc/nss-json
+```
+
+* Run the `test-nss-json` tool created by `make` to make sure everything is in place so far.
+
+* **Now make sure you have an open terminal where you are root!**
+
+* Open the file `/etc/nsswitch.conf` with the editor of your choice and add `json` to e.g. passwd.
+Obviously, you can easily disable the nss-json service by removing `json` again, but if something goes wrong, you may have locked yourself out.
+In the worst case, you need to start your system for e.g. a USB stick to revert your changes to `/etc/nsswitch.conf`.
+
+```
+passwd:         json compat
+group:          json compat
+shadow:         compat
+```
+
+* Try `sudo su yoda` - You should now be logged in as him. May the force be with you.
+
+
+### What you should NOT do
+Don't create a script that logs to a specific file - whenever you change a user with e.g. `sudo su foo`, the file will be written to as a different user,
+most likely provoking an access violation and causing troubles.
 
 * Create an example `nss-json` executable which logs all requests to `/tmp/nss-json-test.txt` by running the following commands:
 
 ```bash
 echo 'echo "$0 was called $1" >> /tmp/nss-json-test.txt' | sudo tee -a /etc/nss-json
 sudo chmod +x /etc/nss-json
-```
-
-* Open the file `/etc/nsswitch.conf` with the editor of your choice and add `json` to e.g. passwd. If you open a fresh terminal and type `sudo su`, you should already see some debug output in action.
-
-
-```
-passwd:         json compat
-group:          compat
-shadow:         compat
 ```
 
 * When you run
