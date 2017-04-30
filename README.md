@@ -15,7 +15,7 @@ This project does that by simply delegating all NSS requests as *JSON documents*
 
 In short: Its JSON in / JSON out!
 
-The module ships with an implementation of that function which delegates to an *executable* - `/etc/nss-json`: The json request is passed an the only argument, and
+The module ships with an implementation of that function which delegates to an *executable* - `/etc/nss-json`: The json request is passed as the only argument, and
 the output to STDOUT is parsed as JSON again. The process exit code is mapped to the NSS error codes.
 
 So with this module, you can now just plug in a bash, NodeJS, JavaScript, Java or whatever script to handle the requests. For example, you could just
@@ -83,7 +83,33 @@ shadow:         compat
 * Try `sudo su yoda` - You should now be logged in as him. May the force be with you.
 
 
-### What you should NOT do
+### JSON Models
+The schema of the JSON documents has yet to be documented - please look at the source files for now; essentially the schemas are similar to the system structs, but
+are not stable yet.
+
+
+## Files
+
+This project includes a copy of DaveGamble's [cJSON as of this commit](https://github.com/DaveGamble/cJSON/tree/05f75e360bf047de359cfce0581a93ea857a0a72).
+
+* `nss-json.h`: Header file only defining the `int _nss_json_handle_request(const *cJSON *const requestJson, cJSON** result)` function for which an implementation must be provided
+* `nss-json.c': Core implementation that delegates all call to the handle json request function mentioned above.
+* `nss-json-impl`: An implementation of the json handler that invokes an executable at `/etc/nss-json`.
+* `nss-json-bindings.h': Function prototypes for converting json to and from passwd, group and shadow structs.
+* `nss-json-bindings.c': Implementation of the json bindings
+* `cJSON-utils.c`: A few helper functions that made my life easier.
+* `cJSON-utils.h`: The corresponding headers.
+
+## Acknowledgements
+
+Source code is largely derived from this [nss-pgsql module](https://github.com/jandd/libnss-pgsql), whose code is according to an comment partly inspired by an nss-ldap module.
+
+
+## License
+To be stated; will be something very liberal that just asks for an acknowledgement.
+
+
+### Note: What you should NOT do
 Don't create a script that logs to a specific file - whenever you change a user with e.g. `sudo su foo`, the file will be written to as a different user,
 most likely provoking an access violation and causing troubles.
 
@@ -103,30 +129,13 @@ You should see output such as:
 
 ```
 /etc/nss-json got called with {
-	"request":	"getwpnam",
-	"name":	"myusername"
+        "request":      "getwpnam",
+        "name": "myusername"
 }
 /etc/nss-json got called with {
-	"request":	"getwpnam",
-	"name":	"root"
+        "request":      "getwpnam",
+        "name": "root"
 }
 ```
-
-
-## Files
-
-This project includes a copy of DaveGamble's [cJSON as of this commit](https://github.com/DaveGamble/cJSON/tree/05f75e360bf047de359cfce0581a93ea857a0a72).
-
-* `nss-json.h`: Header file only defining the `int _nss_json_handle_request(const *cJSON *const requestJson, cJSON** result)` function for which an implementation must be provided
-* `nss-json.c': Core implementation that delegates all call to the handle json request function mentioned above.
-* `nss-json-impl`: An implementation of the json handler that invokes an executable at `/etc/nss-json`.
-* `nss-json-bindings.h': Function prototypes for converting json to and from passwd, group and shadow structs.
-* `nss-json-bindings.c': Implementation of the json bindings
-* `cJSON-utils.c`: A few helper functions that made my life easier.
-* `cJSON-utils.h`: The corresponding headers.
-
-## Acknowledgements
-
-Source code is largely derived from this [nss-pgsql module](https://github.com/jandd/libnss-pgsql).
 
 
