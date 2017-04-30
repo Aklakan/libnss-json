@@ -63,7 +63,7 @@ else:
 * Make the file executable
 
 ```bash
-sudo chmod chmod 755 /etc/nss-json
+sudo chmod 755 /etc/nss-json
 ```
 
 * Note, that this file **must** be executable. If this file contains sensitive information (e.g. a password) you probably want to make it `511` (executable but neither read- nor writable), but this will not work for script languages where the interpreter reads the file under the user's rights.
