@@ -3,28 +3,78 @@ package org.aksw.jnss.model;
 
 import org.aksw.jena_sparql_api.mapper.annotation.DefaultIri;
 import org.aksw.jena_sparql_api.mapper.annotation.IriNs;
+import org.aksw.jena_sparql_api.mapper.annotation.RdfType;
 
 //@Namespace("nss", "http://example.org/nss/")
 @DefaultIri("http://example.org/")
+@RdfType("http://example.org/nss/Passwd")
 public class Passwd {
 
     @IriNs("nss")
-    public String name;
+    protected String name;
 
     @IriNs("nss")
-    public String passwd;
+    protected String passwd;
 
     @IriNs("nss")
-    public int uid;
+    protected int uid;
 
     @IriNs("nss")
-    public String gecos;
+    protected String gecos;
 
     @IriNs("nss")
-    public String dir;
+    protected String dir;
 
     @IriNs("nss")
-    public String shell;
+    protected String shell;
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public String getPasswd() {
+        return passwd;
+    }
+
+    public void setPasswd(String passwd) {
+        this.passwd = passwd;
+    }
+
+    public int getUid() {
+        return uid;
+    }
+
+    public void setUid(int uid) {
+        this.uid = uid;
+    }
+
+    public String getGecos() {
+        return gecos;
+    }
+
+    public void setGecos(String gecos) {
+        this.gecos = gecos;
+    }
+
+    public String getDir() {
+        return dir;
+    }
+
+    public void setDir(String dir) {
+        this.dir = dir;
+    }
+
+    public String getShell() {
+        return shell;
+    }
+
+    public void setShell(String shell) {
+        this.shell = shell;
+    }
 
     @Override
     public String toString() {

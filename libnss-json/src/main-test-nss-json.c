@@ -24,9 +24,10 @@ int test_getpwnam(const char * const name)
         json = cJSON_CreateObject();
         pwd2json(&x, json);
         cJSON_PrintPreallocated(json, buffer, sizeof(buffer), 0);
-        printf("Data at test result: %s\n", buffer);
+        printf("Data at test result %s: %s\n", __FUNCTION__, buffer);
         cJSON_Delete(json);
     } else {
+        printf("Failed test %s\n", __FUNCTION__);
         result = -1;
     }
 
@@ -46,9 +47,10 @@ int test_getpwuid(int uid)
         json = cJSON_CreateObject();
         pwd2json(&x, json);
         cJSON_PrintPreallocated(json, buffer, sizeof(buffer), 0);
-        printf("Data at test result: %s\n", buffer);
+        printf("Data at test result %s: %s\n", __FUNCTION__, buffer);
         cJSON_Delete(json);
     } else {
+        printf("Failed test %s\n", __FUNCTION__);
         result = -1;
     }
 
@@ -69,9 +71,10 @@ int test_getgrnam(const char * const name)
         json = cJSON_CreateObject();
         grp2json(&x, json);
         cJSON_PrintPreallocated(json, buffer, sizeof(buffer), 0);
-        printf("Data at test result: %s\n", buffer);
+        printf("Data at test result %s: %s\n", __FUNCTION__, buffer);
         cJSON_Delete(json);
     } else {
+        printf("Failed test %s\n", __FUNCTION__);
         result = -1;
     }
 
@@ -92,9 +95,10 @@ int test_getgrgid(int gid)
         json = cJSON_CreateObject();
         grp2json(&x, json);
         cJSON_PrintPreallocated(json, buffer, sizeof(buffer), 0);
-        printf("Data at test result: %s\n", buffer);
+        printf("Data at test result %s: %s\n", __FUNCTION__, buffer);
         cJSON_Delete(json);
     } else {
+        printf("Failed test %s\n", __FUNCTION__);
         result = -1;
     }
 
