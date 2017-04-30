@@ -103,11 +103,11 @@ are not stable yet.
 This project includes a copy of DaveGamble's [cJSON as of this commit](https://github.com/DaveGamble/cJSON/tree/05f75e360bf047de359cfce0581a93ea857a0a72).
 
 * `nss-json-impl.h`: Header file only defining the `int _nss_json_handle_request(const *cJSON *const requestJson, cJSON** responseJson)` function for which an implementation must be provided
-* `nss-json.c': Core implementation that delegates all call to the handle json request function mentioned above.
-* `nss-json.h': Function prototypes of the core implementation.
+* `nss-json.c`: Core implementation that delegates all call to the handle json request function mentioned above.
+* `nss-json.h`: Function prototypes of the core implementation.
 * `nss-json-impl.c`: An implementation of the json request handler that invokes an executable at `/etc/nss-json`.
-* `nss-json-bindings.h': Function prototypes for converting json to and from passwd, group and shadow structs.
-* `nss-json-bindings.c': Implementation of the json bindings
+* `nss-json-bindings.h`: Function prototypes for converting json to and from passwd, group and shadow structs.
+* `nss-json-bindings.c`: Implementation of the json bindings
 * `cJSON-utils.c`: A few helper functions that made my life easier.
 * `cJSON-utils.h`: The corresponding headers.
 
