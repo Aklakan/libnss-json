@@ -87,6 +87,16 @@ shadow:         compat
 The schema of the JSON documents has yet to be documented - please look at the source files for now; essentially the schemas are similar to the system structs, but
 are not stable yet.
 
+## Implementation Status
+
+* `_nss_json_getpwnam_r`: Done
+* `_nss_json_getpwuid_r`: Done
+* `_nss_json_getgrnam_r`: Done
+* `_nss_json_getgrgid_r`: Done
+* `_nss_json_getpwent_r`: Soon
+* `_nss_json_getgrent_r`: Soon
+* `the stuff for shadow`: Later
+
 
 ## Files
 
