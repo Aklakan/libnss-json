@@ -156,9 +156,22 @@ BAIL_OUT:
 
 int grp2json(struct group *in, cJSON *result) {
 
+    char** p = in->gr_mem;
+    cJSON* members = cJSON_CreateArray();
+
     cJSON_AddItemToObject(result, GROUP_NAME, _cJSON_CreateStringOrNull(in->gr_name));
     cJSON_AddItemToObject(result, GROUP_PASSWD, _cJSON_CreateStringOrNull(in->gr_passwd));
     cJSON_AddNumberToObject(result, GROUP_GID, in->gr_gid);
+
+    // Append all members
+    cJSON_AddItemToObject(result, GROUP_GRMEM, members);
+
+    if(p != NULL) {
+        while(*p != NULL) {
+            cJSON_AddItemToArray(members, cJSON_CreateString(*p));
+            ++p;
+        }
+    }
 
     return 0;
 }

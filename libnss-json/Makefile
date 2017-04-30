@@ -5,7 +5,7 @@ lib:
 	gcc -fPIC -shared -o target/libnss_json.so.2 -Wl,-soname,libnss_json.so.2 src/nss-json.c src/nss-json-impl.c src/nss-json-bindings.c src/cJSON.c src/cJSON-utils.c -lm
 test:
 	mkdir -p target
-	gcc -o target/test-nss-json src/nss-json.c src/nss-json-impl.c src/nss-json-bindings.c src/cJSON.c src/cJSON-utils.c src/main-test-nss-json.c -lm
+	gcc -o target/main-test-nss-json src/nss-json.c src/nss-json-impl.c src/nss-json-bindings.c src/cJSON.c src/cJSON-utils.c src/main-test-nss-json.c -lm
 
 install:
 	sudo install -m 0644 target/libnss_json.so.2 /lib

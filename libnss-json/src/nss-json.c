@@ -47,58 +47,60 @@ void cleanup(cJSON* requestJson, cJSON* resultJson) {
     }
 }
 
+// Delete non-NULL pointer to JSON and set to NULL
+void _cJSON_SafeDelete(cJSON** p) {
+    if(p != NULL && *p != NULL) {
+        cJSON_Delete(*p);
+        *p = NULL;
+    }
+}
 
-static cJSON *openResponse;
-static cJSON *openMatches;
-static cJSON *cursor;
 
-enum nss_status _nss_json_setpwent (void)
+static cJSON *openResponse = NULL;
+static cJSON *openMatches = NULL;
+static cJSON *cursor = NULL;
+
+//        char x[1000];
+//        cJSON_PrintPreallocated(openMatches, x, sizeof(x), 0);
+//        printf("entry: %s\n", x);
+
+enum nss_status _nss_json_setpwent(void)
 {
     enum nss_status result;
     cJSON* requestJson = cJSON_CreateObject();
     cJSON_AddItemToObject(requestJson, NSS_REQUEST, _cJSON_CreateStringOrNull(NSS_GETPWENT));
 
-    cJSON_Delete(openResponse);
+    _cJSON_SafeDelete(&openResponse);
     result = _nss_json_handle_request(requestJson, &openResponse);
     cJSON_Delete(requestJson);
 
     if(result == NSS_STATUS_SUCCESS) {
         openMatches = _cJSON_GetStringMatches(openResponse, NSS_PWNAM, NULL, NSS_PWUID);
+        cursor = openMatches->child;
     }
 
     return result;
 }
 
-enum nss_status _nss_json_endpwent (void)
+enum nss_status _nss_json_endpwent(void)
 {
-    cJSON_Delete(openResponse);
-    cJSON_Delete(openMatches);
+    _cJSON_SafeDelete(&openResponse);
+    _cJSON_SafeDelete(&openMatches);
     return NSS_STATUS_SUCCESS ;
 }
 
-enum nss_status _nss_json_getpwent_r (struct passwd *out, char *buffer, size_t buflen, int *errnop)
+enum nss_status _nss_json_getpwent_r(struct passwd *out, char *buffer, size_t buflen, int *errnop)
 {
     enum nss_status result;
     if(cursor == NULL) {
         result = NSS_STATUS_NOTFOUND;
     } else {
         json2pwd(cursor, out, buffer, buflen, errnop);
-        cursor = cursor->child;
+        cursor = cursor->next;
+        result = NSS_STATUS_SUCCESS;
     }
+    return result;
 }
-
-/*
- static int i = 0 ;
-
- if( i++ == 0 ) {
-   printf( "@ %s\n", __FUNCTION__ ) ;
-   return init_result(0, result, buffer, buflen, errnop ) ;
- } else {
-   i = 0 ;
-   return NSS_STATUS_NOTFOUND ;
- }
-};
-*/
 
 
 int _nss_json_getpwnam_r (const char *name, struct passwd *out, char *buffer, size_t buflen, int *errnop)
@@ -152,6 +154,50 @@ int _nss_json_getpwuid_r (uid_t uid, struct passwd *out, char *buffer, size_t bu
 
     cleanup(requestJson, responseJson);
 
+    return result;
+}
+
+
+
+
+
+
+
+enum nss_status _nss_json_setgrent(void)
+{
+    enum nss_status result;
+    cJSON* requestJson = cJSON_CreateObject();
+    cJSON_AddItemToObject(requestJson, NSS_REQUEST, _cJSON_CreateStringOrNull(NSS_GETGRENT));
+
+    _cJSON_SafeDelete(&openResponse);
+    result = _nss_json_handle_request(requestJson, &openResponse);
+    cJSON_Delete(requestJson);
+
+    if(result == NSS_STATUS_SUCCESS) {
+        openMatches = _cJSON_GetStringMatches(openResponse, NSS_GRMEM, NULL, NSS_GRGID);
+        cursor = openMatches->child;
+    }
+
+    return result;
+}
+
+enum nss_status _nss_json_endgrent(void)
+{
+    _cJSON_SafeDelete(&openResponse);
+    _cJSON_SafeDelete(&openMatches);
+    return NSS_STATUS_SUCCESS ;
+}
+
+enum nss_status _nss_json_getgrent_r(struct group *out, char *buffer, size_t buflen, int *errnop)
+{
+    enum nss_status result;
+    if(cursor == NULL) {
+        result = NSS_STATUS_NOTFOUND;
+    } else {
+        json2grp(cursor, out, buffer, buflen, errnop);
+        cursor = cursor->next;
+        result = NSS_STATUS_SUCCESS;
+    }
     return result;
 }
 

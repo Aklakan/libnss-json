@@ -11,6 +11,65 @@
 int read_json(cJSON** outJson, const char * const cmd);
 
 
+int test_getpwent() {
+    int result = 0;
+    int errnop;
+    char buffer[4096];
+    struct passwd x;
+    cJSON* json;
+    enum nss_status status;
+
+    result = _nss_json_setpwent();
+    if(result != NSS_STATUS_SUCCESS)
+        goto BAIL_OUT;
+
+    while(_nss_json_getpwent_r(&x, buffer, sizeof(buffer), &errnop) == NSS_STATUS_SUCCESS) {
+        json = cJSON_CreateObject();
+        pwd2json(&x, json);
+        cJSON_PrintPreallocated(json, buffer, sizeof(buffer), 0);
+        printf("Data at iteration %s: %s\n", __FUNCTION__, buffer);
+        cJSON_Delete(json);
+    }
+
+    result = _nss_json_endpwent();
+    if(result != NSS_STATUS_SUCCESS)
+        goto BAIL_OUT;
+
+BAIL_OUT:
+
+    return result;
+}
+
+int test_getgrent() {
+    int result = 0;
+    int errnop;
+    char buffer[4096];
+    struct group x;
+    cJSON* json;
+    enum nss_status status;
+
+    result = _nss_json_setgrent();
+    if(result != NSS_STATUS_SUCCESS)
+        goto BAIL_OUT;
+
+    while(_nss_json_getgrent_r(&x, buffer, sizeof(buffer), &errnop) == NSS_STATUS_SUCCESS) {
+        json = cJSON_CreateObject();
+        grp2json(&x, json);
+        cJSON_PrintPreallocated(json, buffer, sizeof(buffer), 0);
+        printf("Data at iteration %s: %s\n", __FUNCTION__, buffer);
+        cJSON_Delete(json);
+    }
+
+    result = _nss_json_endgrent();
+    if(result != NSS_STATUS_SUCCESS)
+        goto BAIL_OUT;
+
+BAIL_OUT:
+
+    return result;
+}
+
+
 int test_getpwnam(const char * const name)
 {
     int result = 0;
@@ -134,7 +193,8 @@ int testRoundTrip1()
 */
 
 int performTestRun() {
-
+    enum nss_status status;
+    
     // Make sure there is no memory leak in the third party library
     //const char* str = "";
     //cJSON* str = "{'a': 'b', 'c': ['d', 'e', 123 ] }";
@@ -142,6 +202,16 @@ int performTestRun() {
     //cJSON_Delete(json);
     //printf("Parse and delete...");
 
+
+    status = test_getpwent();
+    if(status != NSS_STATUS_SUCCESS) {
+        printf("Problem with test_getpwent, status: %d", status);
+    }
+
+    status = test_getgrent();
+    if(status != NSS_STATUS_SUCCESS) {
+        printf("Problem with test_getgrent, status: %d", status);
+    }
 
     test_getpwnam("yoda");
     test_getpwuid(10000);
