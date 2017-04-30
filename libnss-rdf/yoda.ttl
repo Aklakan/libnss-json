@@ -1,0 +1,24 @@
+PREFIX nss: <http://example.org/nss/>
+PREFIX u: <http://example.org/resource/user/>
+PREFIX g: <http://example.org/resource/group/>
+
+u:Yoda
+  a nss:User ;
+  nss:name "yoda" ;
+  nss:passwd "foobar" ;
+  nss:uid 10000 ;
+  nss:gid 10000 ;
+  nss:gecos: "foobar" ;
+  nss:dir "/home/yoda" ;
+  nss:shell "/bin/bash" ;
+  .
+
+g:Yoda
+  a nss:Group ;
+  nss:name "yoda" ;
+  nss:passwd "yoda" ;
+  nss:gid 10000 ;
+  nss:member "yoda", "test" ;
+  .
+  
+  

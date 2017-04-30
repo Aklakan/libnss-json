@@ -1,8 +1,18 @@
 # Name Switch Service (NSS) JSON Binding Module
 
+
+**This project is not released yet due to critical open issues**
+
+This repository contains the core `libnss-json` implementation together with a small plugin that - in addition to JSON - enables connecting RDF and SPARQL data sources to the NSS (uses simply JSON-LD context for the  RDF-JSON binding).
+
+
 ## You have been warned - don't blame me if you mess up your system!
 As of now, this is a prototype implementation in 'works for me' state on my Ubuntu 16.04 machine.
 Feedback is very welcome in order to improve and battle-harden this module, however as of now, be aware that bugs in the software could either lock you out from your system, or grant access rights to people who shouldn't have them.
+
+
+## Known Issues
+* **Critical**: Restarting Ubuntu or trying to resume from a locked screen breaks as of now. Needs to be fixed before first release.
 
 
 ## Its a JSON-in / JSON-out NSS service
