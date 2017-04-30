@@ -1,8 +1,6 @@
 # Name Switch Service (NSS) JSON Binding Module
 
 
-**This project is not released yet due to critical open issues**
-
 This repository contains the core `libnss-json` implementation together with a small plugin that - in addition to JSON - enables connecting RDF and SPARQL data sources to the NSS (uses simply JSON-LD context for the  RDF-JSON binding).
 
 
@@ -12,7 +10,7 @@ Feedback is very welcome in order to improve and battle-harden this module, howe
 
 
 ## Known Issues
-* **Critical**: Restarting Ubuntu or trying to resume from a locked screen breaks as of now. Needs to be fixed before first release.
+* **Beware**: When using a python script for `/etc/nss-json`, restarting Ubuntu or trying to resume from a locked screen locks you out from the system, and you may need to boot from e.g. an USB drive. This is probably due to differences in the python environments of the different users.
 
 
 ## Its a JSON-in / JSON-out NSS service
@@ -47,38 +45,26 @@ If make yields an error, please report an issue.
 
 ### Enabling the service
 
-* Create simple `/etc/nss-json` file which handles the requests. The following example allows the user 'yoda' to log in.
-You can also copy `example-nss-json-yoda` file included in this repo.
+* Create simple `/etc/nss-json` executable file which handles the requests. The following example allows the user 'yoda' to log in.
 
-```python
-#!/usr/bin/python
+```bash
+#!/bin/sh
 
-import sys
-import json
+echo '[{ "name": "yoda", "passwd": "foobar", "uid":10000, "gid":10000, "gecos": "foobar", "dir": "/home/yoda", "shell": "/bin/bash" }, {"name": "yoda", "passwd": "foobar", "gid": 10000, "members": ["yoda"] } ]'
 
-arg = sys.argv[1]
-x = json.loads(arg)
+* You may now ask **WAIT! I see the output JSON, but where is the request handled?**. The answer is, whether you return a single json object or a json array, `nss-json` does built in filtering according to the requested entry. So you can return exactly the queried object or just return a JSON array holding everything and both will work. See the JSON Models section for by which rules objects are discriminated from each other.
 
-# Lets allow yoda to log in
-if (x['request'] == 'getpwnam' and x['name'] == "yoda") or (x['request'] == 'getpwuid' and x['uid'] == 10000):
-  print '{"name": "yoda", "passwd": "foobar", "uid":10000, "gid":10000, "gecos": "foobar", "dir": "/home/yoda", "shell": "/bin/bash"}'
-  exit(1)
-elif(x['request'] == 'getgrnam' and x['name'] == "yoda") or (x['request'] == 'getgrgid' and x['gid'] == 10000):
-  print '{"name": "yoda", "passwd": "foobar", "gid": 10000, "members": ["yoda"] }'
-  exit(1)
-else:
-  exit(0)
+
 ```
-
 * Make the file executable
 
 ```bash
 sudo chmod 755 /etc/nss-json
 ```
 
-* Note, that this file **must** be executable. If this file contains sensitive information (e.g. a password) you probably want to make it `511` (executable but neither read- nor writable), but this will not work for script languages where the interpreter reads the file under the user's rights.
+* Note, that this file **must** be executable by all. If this file contains sensitive information (e.g. a password) you would probably want to make it `511` (executable but neither read- nor writable), but this will not work for script languages where the interpreter reads the file under the user's rights!
 
-* Run the `test-nss-json` tool created by `make` to make sure everything is in place so far.
+* Run the `target/main-test-nss-json` tool created by `make` to make sure everything is in place so far.
 
 * **Now make sure you have an open terminal where you are root!**
 
@@ -99,14 +85,22 @@ shadow:         compat
 The schema of the JSON documents has yet to be documented - please look at the source files for now; essentially the schemas are similar to the system structs, but
 are not stable yet.
 
+The following rules are used to identify the corresponding nss record type by a JSON document (subject to change).
+
+* passwd records must have the `uid` and `name` keys.
+* group records are identified by having both `gid` and `members` keys. This means even if there are no members, the JSON must still define that key.
+
+
 ## Implementation Status
 
 * `_nss_json_getpwnam_r`: Done
 * `_nss_json_getpwuid_r`: Done
+* `_nss_json_getpwent_r`: Done
+
 * `_nss_json_getgrnam_r`: Done
 * `_nss_json_getgrgid_r`: Done
-* `_nss_json_getpwent_r`: Soon
-* `_nss_json_getgrent_r`: Soon
+* `_nss_json_getgrent_r`: Done
+
 * `the stuff for shadow`: Later
 
 
@@ -132,7 +126,26 @@ Source code is largely derived from this [nss-pgsql module](https://github.com/j
 To be stated; will be something very liberal that just asks for an acknowledgement.
 
 
-### Note: What you should NOT do
+### Notes: What you should NOT do
+
+* Don't use python scripts - as soon Ubuntu locks the screen or you reboot, there will be some change in the python environment throwing exceptions, and this locks you out from the system. In that case, boot e.g. from a USB drive and remove the `json` entries from `/etc/nsswitch`.
+
+```python
+#!/usr/bin/python
+
+import sys
+import json
+
+arg = sys.argv[1]
+x = json.loads(arg)
+
+# Lets allow yoda to log in
+if (x['request'] == 'getpwnam' and x['name'] == "yoda") or (x['request'] == 'getpwuid' and x['uid'] == 10000):
+  print '{"name": "yoda", "passwd": "foobar", "uid":10000, "gid":10000, "gecos": "foobar", "dir": "/home/yoda", "shell": "/bin/bash"}'
+elif(x['request'] == 'getgrnam' and x['name'] == "yoda") or (x['request'] == 'getgrgid' and x['gid'] == 10000):
+  print '{"name": "yoda", "passwd": "foobar", "gid": 10000, "members": ["yoda"] }'
+```
+
 Don't create a script that logs to a specific file - whenever you change a user with e.g. `sudo su foo`, the file will be written to as a different user,
 most likely provoking an access violation and causing troubles.
 
