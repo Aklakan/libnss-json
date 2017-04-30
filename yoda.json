@@ -1,0 +1,19 @@
+[
+  {
+    "name": "yoda",
+    "passwd": "foobar",
+    "uid": 10000,
+    "gid": 10000,
+    "gecos": "foobar",
+    "dir": "/home/yoda",
+    "shell": "/bin/bash"
+  },
+  {
+    "name": "yoda",
+    "passwd": "foobar",
+    "gid": 10000,
+    "members": [
+      "yoda"
+    ]
+  }
+]
