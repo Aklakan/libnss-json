@@ -116,11 +116,14 @@ cJSON* _cJSON_GetStringMatches(cJSON * json, const char * key, const char * valu
 }
 
 /**
- * Return the only item of arr. If arr is empty or there are more items, return NULL.
+ * Argument is expected to be an array of references only!
+ * Returns the single item in this array. If arr is empty or there are more items, returns NULL.
  * Always deletes the provided array.
  */
 cJSON* _cJSON_ExtractSingleResult(cJSON* arr) {
-    cJSON* result = cJSON_IsArray(arr) && cJSON_GetArraySize(arr) == 1 ? cJSON_GetArrayItem(arr, 0) : NULL;
+    cJSON* tmp = cJSON_IsArray(arr) && cJSON_GetArraySize(arr) == 1 ? cJSON_GetArrayItem(arr, 0) : NULL;
+    cJSON* result = tmp == NULL ? NULL : tmp->ref;
+
     cJSON_Delete(arr);
     return result;
 }

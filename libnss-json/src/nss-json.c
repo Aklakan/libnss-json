@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdarg.h>
+#include <errno.h>
 
 
 #ifdef HAVE_CONFIG_H
@@ -64,11 +65,19 @@ static cJSON *cursor = NULL;
 //        cJSON_PrintPreallocated(openMatches, x, sizeof(x), 0);
 //        printf("entry: %s\n", x);
 
+void printJson(cJSON * json) {
+    char x[1000];
+    cJSON_PrintPreallocated(json, x, sizeof(x), 0);
+    printf("json is: %s\n", x);
+}
+
 enum nss_status _nss_json_setpwent(void)
 {
     enum nss_status result;
     cJSON* requestJson = cJSON_CreateObject();
     cJSON_AddItemToObject(requestJson, NSS_REQUEST, _cJSON_CreateStringOrNull(NSS_GETPWENT));
+
+    // printf("@ %s\n", __FUNCTION__);
 
     _cJSON_SafeDelete(&openResponse);
     result = _nss_json_handle_request(requestJson, &openResponse);
@@ -84,6 +93,8 @@ enum nss_status _nss_json_setpwent(void)
 
 enum nss_status _nss_json_endpwent(void)
 {
+    // printf("@ %s\n", __FUNCTION__);
+
     _cJSON_SafeDelete(&openResponse);
     _cJSON_SafeDelete(&openMatches);
     return NSS_STATUS_SUCCESS ;
@@ -92,7 +103,11 @@ enum nss_status _nss_json_endpwent(void)
 enum nss_status _nss_json_getpwent_r(struct passwd *out, char *buffer, size_t buflen, int *errnop)
 {
     enum nss_status result;
+
+    // printf("@ %s\n", __FUNCTION__);
+
     if(cursor == NULL) {
+        *errnop = ENOENT;
         result = NSS_STATUS_NOTFOUND;
     } else {
         json2pwd(cursor, out, buffer, buflen, errnop);
@@ -103,7 +118,7 @@ enum nss_status _nss_json_getpwent_r(struct passwd *out, char *buffer, size_t bu
 }
 
 
-int _nss_json_getpwnam_r (const char *name, struct passwd *out, char *buffer, size_t buflen, int *errnop)
+enum nss_status _nss_json_getpwnam_r (const char *name, struct passwd *out, char *buffer, size_t buflen, int *errnop)
 {
     enum nss_status result;
     cJSON* requestJson = cJSON_CreateObject();
@@ -111,6 +126,8 @@ int _nss_json_getpwnam_r (const char *name, struct passwd *out, char *buffer, si
 
     cJSON_AddItemToObject(requestJson, NSS_REQUEST, _cJSON_CreateStringOrNull(NSS_GETPWNAM));
     cJSON_AddItemToObject(requestJson, NSS_PWNAM, _cJSON_CreateStringOrNull(name));
+
+    // printf("@ %s\n", __FUNCTION__);
 
     result = _nss_json_handle_request(requestJson, &responseJson);
 
@@ -130,7 +147,7 @@ int _nss_json_getpwnam_r (const char *name, struct passwd *out, char *buffer, si
     return result;
 }
 
-int _nss_json_getpwuid_r (uid_t uid, struct passwd *out, char *buffer, size_t buflen, int *errnop)
+enum nss_status _nss_json_getpwuid_r (uid_t uid, struct passwd *out, char *buffer, size_t buflen, int *errnop)
 {
     enum nss_status result;
     cJSON* responseJson = NULL;
@@ -139,28 +156,32 @@ int _nss_json_getpwuid_r (uid_t uid, struct passwd *out, char *buffer, size_t bu
     cJSON_AddItemToObject(requestJson, NSS_REQUEST, _cJSON_CreateStringOrNull(NSS_GETPWUID));
     cJSON_AddNumberToObject(requestJson, NSS_PWUID, uid);
 
+    // printf("@ %s\n", __FUNCTION__);
+
     result = _nss_json_handle_request(requestJson, &responseJson);
 
     if(result == NSS_STATUS_SUCCESS) {
         cJSON* arr = _cJSON_GetIntMatches(responseJson, NSS_PWUID, uid, NSS_PWNAM);
+        // printf("--> got matches @ %s\n", __FUNCTION__);
+        // printJson(arr);
         cJSON* match = _cJSON_ExtractSingleResult(arr);
 
+        // printf("--> got extraction @ %s\n", __FUNCTION__);
+
         if(match != NULL) {
+            //printJson(match);
             json2pwd(match, out, buffer, buflen, errnop);
         } else {
             result = NSS_STATUS_NOTFOUND;
         }
+        // printf("--> done extraction @ %s\n", __FUNCTION__);
     }
 
     cleanup(requestJson, responseJson);
+    // printf("--> Done @ %s\n", __FUNCTION__);
 
     return result;
 }
-
-
-
-
-
 
 
 enum nss_status _nss_json_setgrent(void)
@@ -168,6 +189,8 @@ enum nss_status _nss_json_setgrent(void)
     enum nss_status result;
     cJSON* requestJson = cJSON_CreateObject();
     cJSON_AddItemToObject(requestJson, NSS_REQUEST, _cJSON_CreateStringOrNull(NSS_GETGRENT));
+
+    // printf("@ %s\n", __FUNCTION__);
 
     _cJSON_SafeDelete(&openResponse);
     result = _nss_json_handle_request(requestJson, &openResponse);
@@ -183,6 +206,8 @@ enum nss_status _nss_json_setgrent(void)
 
 enum nss_status _nss_json_endgrent(void)
 {
+    // printf("@ %s\n", __FUNCTION__);
+
     _cJSON_SafeDelete(&openResponse);
     _cJSON_SafeDelete(&openMatches);
     return NSS_STATUS_SUCCESS ;
@@ -191,6 +216,9 @@ enum nss_status _nss_json_endgrent(void)
 enum nss_status _nss_json_getgrent_r(struct group *out, char *buffer, size_t buflen, int *errnop)
 {
     enum nss_status result;
+
+    // printf("@ %s\n", __FUNCTION__);
+
     if(cursor == NULL) {
         result = NSS_STATUS_NOTFOUND;
     } else {
@@ -210,6 +238,9 @@ enum nss_status _nss_json_getgrnam_r(const char *grnam, struct group *out,
     cJSON* responseJson = NULL;
     cJSON* requestJson = cJSON_CreateObject();
 
+    // printf("@ %s\n", __FUNCTION__);
+
+
     cJSON_AddItemToObject(requestJson, NSS_REQUEST, _cJSON_CreateStringOrNull(NSS_GETGRNAM));
     cJSON_AddItemToObject(requestJson, NSS_GRNAM, _cJSON_CreateStringOrNull(grnam));
 
@@ -217,7 +248,7 @@ enum nss_status _nss_json_getgrnam_r(const char *grnam, struct group *out,
 
     if(result == NSS_STATUS_SUCCESS) {
         cJSON* arr = _cJSON_GetStringMatches(responseJson, NSS_GRNAM, grnam, NSS_GRMEM);
-//printf("At %s: %d matches for %s %s %s\n", __FUNCTION__, cJSON_GetArraySize(arr), NSS_GRNAM, grnam, NSS_GRMEM);
+// printf("At %s: %d matches for %s %s %s\n", __FUNCTION__, cJSON_GetArraySize(arr), NSS_GRNAM, grnam, NSS_GRMEM);
         cJSON* match = _cJSON_ExtractSingleResult(arr);
 
         if(match != NULL) {
@@ -238,6 +269,8 @@ enum nss_status _nss_json_getgrgid_r(uid_t gid, struct group *out,
     enum nss_status result;
     cJSON* responseJson = NULL;
     cJSON* requestJson = cJSON_CreateObject();
+
+    // printf("@ %s\n", __FUNCTION__);
 
     cJSON_AddItemToObject(requestJson, NSS_REQUEST, _cJSON_CreateStringOrNull(NSS_GETGRGID));
     cJSON_AddNumberToObject(requestJson, NSS_GRGID, gid);
@@ -267,14 +300,14 @@ enum nss_status _nss_json_getgrgid_r(uid_t gid, struct group *out,
 enum nss_status
 _nss_json_getpwbynam (const char *nam, struct passwd *result, char *buffer,
    size_t buflen, int *errnop) {
- printf( "@ %s with name %s\n", __FUNCTION__, nam ) ;
+ // printf( "@ %s with name %s\n", __FUNCTION__, nam ) ;
  return init_result(nam, result, buffer, buflen, errnop ) ;
 };
 
 enum nss_status
 _nss_json_getpwbynam_r (const char *nam, struct passwd *result, char *buffer,
    size_t buflen, int *errnop) {
- printf( "@ %s with name_r %s\n", __FUNCTION__, nam ) ;
+ // printf( "@ %s with name_r %s\n", __FUNCTION__, nam ) ;
  return init_result(nam, result, buffer, buflen, errnop ) ;
 };
 

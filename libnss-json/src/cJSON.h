@@ -58,6 +58,10 @@ typedef struct cJSON
     /* An array or object item will have a child pointer pointing to a chain of the items in the array/object. */
     struct cJSON *child;
 
+
+    /* If this is node is a reference, then ref points to referenced node */
+    struct cJSON *ref; // ~ Addition by Claus Stadler, 2017
+
     /* The type of the item, as above. */
     int type;
 

@@ -1606,6 +1606,7 @@ static cJSON *create_reference(const cJSON *item, const internal_hooks * const h
     ref->string = NULL;
     ref->type |= cJSON_IsReference;
     ref->next = ref->prev = NULL;
+    ref->ref = (cJSON*)item; // ~ Addition by Claus Stadler, 2017
     return ref;
 }
 

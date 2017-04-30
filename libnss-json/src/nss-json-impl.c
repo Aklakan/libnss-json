@@ -3,6 +3,7 @@
 #include <string.h>
 
 #include <malloc.h>
+#include <nss.h>
 //#include <errno.h>
 
 //#include "nss-json.h"
@@ -61,6 +62,7 @@ int read_json(cJSON** outJson, const char * const cmd) {
 
         data = read_data(fp);
         result = WEXITSTATUS(pclose(fp));
+        
         //printf("Read Status / Response Buffer: %d / %s\n", result, data);
         *outJson = cJSON_Parse(data);
         //printf("json: %d\n", *outJson);
@@ -72,8 +74,9 @@ int read_json(cJSON** outJson, const char * const cmd) {
 }
 
 
-int _nss_json_handle_request(const cJSON * const requestJson, cJSON** responseJson) {
-
+enum nss_status _nss_json_handle_request(const cJSON * const requestJson, cJSON** responseJson) {
+    enum nss_status result;
+    int exitCode;
     // Render the requestJson as a string and pass it to the script
     char *rendered = cJSON_Print(requestJson);
 
@@ -81,12 +84,13 @@ int _nss_json_handle_request(const cJSON * const requestJson, cJSON** responseJs
 
     char buf[2048];
     // TODO Escape single quotes...
-    // TODO Allocate buffer dynamically
+    // TODO Allocate buffer dynamically - use asprintf
     snprintf(buf, sizeof(buf), "%s '%s'", CFGFILE, rendered);
     free(rendered);
     //printf("Request Call: %s", buf);
 
-    int result = read_json(responseJson, buf);
+    exitCode = read_json(responseJson, buf);
+    result = exitCode == 0 ? NSS_STATUS_SUCCESS : NSS_STATUS_UNAVAIL;
 
 //    rendered = cJSON_Print(*responseJson);
 //    printf("ResponseJson: %s", rendered);

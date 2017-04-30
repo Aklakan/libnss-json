@@ -205,12 +205,12 @@ int performTestRun() {
 
     status = test_getpwent();
     if(status != NSS_STATUS_SUCCESS) {
-        printf("Problem with test_getpwent, status: %d", status);
+        printf("Problem with test_getpwent, status: %d\n", status);
     }
 
     status = test_getgrent();
     if(status != NSS_STATUS_SUCCESS) {
-        printf("Problem with test_getgrent, status: %d", status);
+        printf("Problem with test_getgrent, status: %d\n", status);
     }
 
     test_getpwnam("yoda");
