@@ -18,6 +18,7 @@
 #include "cJSON-utils.h"
 #include "nss-json-bindings.h"
 #include "nss-json.h"
+#include "nss-json-impl.h"
 
 
 #define NSS_REQUEST  "request"
@@ -85,7 +86,7 @@ int _nss_json_getpwnam_r (const char *name, struct passwd *out, char *buffer, si
     cJSON* resultJson = NULL;
     cJSON* requestJson = cJSON_CreateObject();
 
-    printf( "@ %s\n", __FUNCTION__ ) ;
+    //printf( "@ %s\n", __FUNCTION__ ) ;
 
     cJSON_AddItemToObject(requestJson, NSS_REQUEST, _cJSON_CreateStringOrNull(NSS_GETPWNAM));
     cJSON_AddItemToObject(requestJson, NSS_PWNAM, _cJSON_CreateStringOrNull(name));
@@ -109,7 +110,7 @@ int _nss_json_getpwuid_r (uid_t uid, struct passwd *out, char *buffer, size_t bu
     cJSON* resultJson = NULL;
     cJSON* requestJson = cJSON_CreateObject();
 
-    printf( "@ %s\n", __FUNCTION__ ) ;
+    //printf( "@ %s\n", __FUNCTION__ ) ;
 
     cJSON_AddItemToObject(requestJson, NSS_REQUEST, _cJSON_CreateStringOrNull(NSS_GETPWUID));
     cJSON_AddNumberToObject(requestJson, NSS_PWUID, uid);
@@ -129,18 +130,17 @@ int _nss_json_getpwuid_r (uid_t uid, struct passwd *out, char *buffer, size_t bu
 
 
 
-enum nss_status
-_nss_json_getgrnam_r(const char *grnam, struct group *out,
+enum nss_status _nss_json_getgrnam_r(const char *grnam, struct group *out,
                       char *buffer, size_t buflen, int *errnop)
 {
     int result;
     cJSON* resultJson = NULL;
     cJSON* requestJson = cJSON_CreateObject();
 
-    printf( "@ %s\n", __FUNCTION__ ) ;
+    //printf( "@ %s\n", __FUNCTION__ ) ;
 
     cJSON_AddItemToObject(requestJson, NSS_REQUEST, _cJSON_CreateStringOrNull(NSS_GETGRNAM));
-    cJSON_AddItemToObject(requestJson, NSS_GRGID, _cJSON_CreateStringOrNull(grnam));
+    cJSON_AddItemToObject(requestJson, NSS_GRNAM, _cJSON_CreateStringOrNull(grnam));
 
     result = _nss_json_handle_request(requestJson, &resultJson);
 
@@ -155,15 +155,14 @@ _nss_json_getgrnam_r(const char *grnam, struct group *out,
     return result;
 }
 
-enum nss_status
-_nss_json_getgrgid_r(uid_t gid, struct group *out,
+enum nss_status _nss_json_getgrgid_r(uid_t gid, struct group *out,
                       char *buffer, size_t buflen, int *errnop)
 {
     int result;
     cJSON* resultJson = NULL;
     cJSON* requestJson = cJSON_CreateObject();
 
-    printf( "@ %s\n", __FUNCTION__ ) ;
+    //printf( "@ %s\n", __FUNCTION__ ) ;
 
     cJSON_AddItemToObject(requestJson, NSS_REQUEST, _cJSON_CreateStringOrNull(NSS_GETGRGID));
     cJSON_AddNumberToObject(requestJson, NSS_GRGID, gid);

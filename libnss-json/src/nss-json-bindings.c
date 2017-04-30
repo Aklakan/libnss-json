@@ -24,6 +24,7 @@
 #define GROUP_NAME    "name"
 #define GROUP_PASSWD  "passwd"
 #define GROUP_GID     "gid"
+#define GROUP_GRMEM   "members"
 /* define passwd column names */
 #define PASSWD_NAME   "name"
 #define PASSWD_PASSWD "passwd"
@@ -163,11 +164,85 @@ int grp2json(struct group *in, cJSON *result) {
 }
 
 
+
+/*
+ * return array of strings containing usernames that are member of group with gid 'gid'
+ */
+enum nss_status getgroupmem(cJSON *json,
+                            struct group *result,
+                            char *buffer,
+                            size_t buflen, int *errnop)
+{
+    cJSON *item;
+    int n, t = 0;
+    enum nss_status status = NSS_STATUS_NOTFOUND;
+    size_t ptrsize;
+
+/*
+    params[0] = malloc(12);
+    n = snprintf(params[0], 12, "%d", gid);
+    if (n == -1 || n > 12) {
+        status = NSS_STATUS_UNAVAIL;
+        *errnop = EAGAIN;
+        goto BAIL_OUT;
+    }
+*/
+
+	//res = PQexecParams(_conn, getcfg("getgroupmembersbygid"), 1, NULL, (const char**)params, NULL, NULL, 0);
+/*
+	if(PQresultStatus(res) != PGRES_TUPLES_OK) {
+		status = NSS_STATUS_UNAVAIL;
+		goto BAIL_OUT;
+	}
+*/
+
+    if(!cJSON_IsArray(json))
+        goto BAIL_OUT;
+
+    n = cJSON_GetArraySize(json);
+
+    // Make sure there's enough room for the array of pointers to group member names
+    ptrsize = (n+1) * sizeof(const char *);
+    if(buflen < ptrsize) {
+        status = NSS_STATUS_TRYAGAIN;
+        *errnop = ERANGE;
+        goto BAIL_OUT;
+    }
+
+    /* realign the buffer on a 4-byte boundary */
+    buflen -= 4-((long)buffer & 0x3);
+    buffer += 4-((long)buffer & 0x3);
+
+    result->gr_mem = (char**)buffer;
+
+    buffer += (ptrsize+3)&(~0x3);
+    buflen -= (ptrsize+3)&(~0x3);
+
+//	for(t = 0; t < n; t++) {
+    cJSON_ArrayForEach(item, json) {
+        status = copy_nss_string(item->valuestring, &(result->gr_mem[t]), &buffer, &buflen, errnop);
+        if(status != NSS_STATUS_SUCCESS) goto BAIL_OUT;
+        ++t;
+    }
+
+    // If the group has no members, there was still success
+    if (n == 0) {
+        *errnop = 0;
+        status = NSS_STATUS_SUCCESS;
+    }
+    result->gr_mem[n] = NULL;
+	
+BAIL_OUT:
+    return status;
+}
+
+
 enum nss_status json2grp(cJSON *json, struct group *result,
                         char *buffer,
                         size_t buflen, int *errnop)
 {
     enum nss_status status = NSS_STATUS_NOTFOUND;
+    cJSON *members = cJSON_GetObjectItem(json, GROUP_GRMEM);
 
     if(json == NULL) {
         goto BAIL_OUT;
@@ -184,6 +259,9 @@ enum nss_status json2grp(cJSON *json, struct group *result,
     // Can be less careful with uid/gid
     // Fallback to 'nobody' if no id present
     result->gr_gid = _cJSON_GetIntByKey(json, GROUP_GID, 65534);
+
+    
+    status = getgroupmem(members, result, buffer, buflen, errnop);
 
 BAIL_OUT:
     return status;
