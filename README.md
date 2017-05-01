@@ -1,34 +1,30 @@
 # Name Switch Service (NSS) JSON Binding Module
 
-This repository contains the core `libnss-json`.
+LDAP, Active Directory, MYSQL, Postgres, ... Why not just JSON / JSON-LD? Its just data after all.
 
-## You have been warned - don't blame me if you mess up your system!
-As of now, this implementation has only been tested on Ubuntu 16.04.
-Feedback is very welcome in order to improve and battle-harden this module, however as of now, be aware that bugs in the software could either lock you out from your system, or grant access rights to people who shouldn't have them.
-
-
-## Known Issues
-* **Beware**: When using a python script for `/etc/nss-json`, restarting Ubuntu or trying to resume from a locked screen locks you out from the system, and you may need to boot from e.g. an USB drive. This is probably due to differences in the python environments of the different users.
-
-
-## Its a JSON-in / JSON-out NSS service
+## What is this project about it and why?
 In a nutshell, the Name Switch Service is a facility in Linux systems that handles different kinds of data lookup requests.
 Most prominently, user, group and password lookups are handled by the NSS.
 For details you may want to consult the [Wikipedia article](https://en.wikipedia.org/wiki/Name_Service_Switch).
 There are NSS modules for LDAP, Active Directory, MYSQL, Postgres, and whatnot, which all implement a certain set of C functions.
 The exercise of this project is to provide a simple extension point for connecting handlers written in arbitrary languages to the NSS.
-This project does that by simply delegating all NSS requests as *JSON documents* to a single *function* whose implementation is is expected to reply with an appropriate *JSON* document repsonse. Well, **or the implementation can be so dumb to just returns a JSON array of items and let nss-json pick the approriate one(s)**.
+This project does that by simply delegating all NSS requests as *JSON documents* to a single *function* whose implementation is is expected to reply with an appropriate *JSON* document repsonse.
 
-In short: Its JSON in / JSON out!
+In fact, you can just return an arbitary JSON array, and nss-json will pick the appropriate ones.
 
-The module ships with an implementation of that function which delegates to an *executable* - `/etc/nss-json`: The json request is passed as the only argument, and
-the output to STDOUT is parsed as JSON again. The process is expected to return 0 on success.
+## You have been warned - don't blame me if you mess up your system!
+As of now, this implementation has only been tested on Ubuntu 16.04.
+Feedback is very welcome in order to improve and battle-harden this module, however as of now, be aware that bugs in the software could either lock you out from your system, or grant access rights to people who shouldn't have them.
 
-So with this module, you can now just plug in a bash, NodeJS, JavaScript, Java or whatever script to handle the requests. For example, you could just
-curl a JSON file in a private GitHub repo.
+## Known Issues
+* **Beware**: When using **python** for scripting `/etc/nss-json`, restarting Ubuntu or trying to resume from a locked screen locks you out from the system, and you may need to boot from e.g. an USB drive. This is probably due to differences in the python environments of the different users.
 
 
-Whether this is a feasibile approach from security and performance perspectives has yet to be determined.
+## How to use
+The module ships with an implementation which delegates all requests to the `/etc/nss-json` *executable*.
+The json request is passed as the only argument, and the output to STDOUT is parsed as JSON again. The process is expected to return 0 on success.
+
+**Note, that all network security issues need to be handled by your /etc/nss-json implementation**.
 
 ## Building
 Enter the `libnss-json` folder.
@@ -36,6 +32,7 @@ Enter the `libnss-json` folder.
 * Simply run `make`. This builds the project from the `src` folder and puts the artifacts into `target`. It runs the following two sub targets:
 * `make test`: Creates the `test-nss-json` executable which runs example user/group requests to your `/etc/nss-json` via the nss api.
 * `make lib`: Builds the `libnss_json.so.2` library.
+
 * `make install`: This copies the `libnss_json.so.2` to `/lib` and runs `ldconfig`. At this point, no harm should be caused.
 
 If make yields an error, please report an issue.
@@ -43,7 +40,7 @@ If make yields an error, please report an issue.
 
 ### Enabling the service
 
-* Create simple `/etc/nss-json` executable file which handles the requests. The following example allows the user 'yoda' to log in.
+* Create a simple `/etc/nss-json` executable file which handles the requests. The following example allows the user 'yoda' to log in.
 
 ```bash
 #!/bin/sh
@@ -60,15 +57,15 @@ echo '[{ "name": "yoda", "passwd": "foobar", "uid":10000, "gid":10000, "gecos": 
 sudo chmod 755 /etc/nss-json
 ```
 
-* Note, that this file **must** be executable by all. If this file contains sensitive information (e.g. a password) you would probably want to make it `511` (executable but neither read- nor writable), but this will not work for script languages where the interpreter reads the file under the user's rights!
+* Note, that this file **must** be executable by all. If this file contains sensitive information (e.g. a password) you might be inclined to make it `511` (executable but neither read- nor writable), but this will not work for script languages where the interpreter reads the file under the user's rights!
 
-* Run the `target/main-test-nss-json` tool created by `make` to make sure everything is in place so far.
+* Run the `target/main-test-nss-json` tool created by `make` to make sure everything is in place so far. **TODO** The test script assumes above setup, and half of the tests actually succeed if a fail is reported.
 
 * **Now make sure you have an open terminal where you are root!**
 
 * Open the file `/etc/nsswitch.conf` with the editor of your choice and add `json` to e.g. passwd.
 Obviously, you can easily disable the nss-json service by removing `json` again, but if something goes wrong, you may have locked yourself out.
-In the worst case, you need to start your system for e.g. a USB stick to revert your changes to `/etc/nsswitch.conf`.
+In the worst case, you need to start your system for e.g. a USB drive to revert your changes to `/etc/nsswitch.conf`.
 
 ```
 passwd:         json compat
@@ -84,6 +81,7 @@ shadow:         compat
 #!/bin/sh
 (>&2 echo "$1")
 curl -L  https://raw.githubusercontent.com/Aklakan/libnss-json/master/yoda.json
+#curl -L  https://raw.githubusercontent.com/Aklakan/libnss-json/master/yoda.jsonld
 ```
 
 ## Caching
@@ -157,6 +155,7 @@ time for x in {0..50}; do sudo su yoda -c 'echo "test"'; done
 
 
 ### Notes: What you should NOT do
+*This section needs cleaning up*
 
 * Don't use python scripts - as soon Ubuntu locks the screen or you reboot, there will be some change in the python environment throwing exceptions, and this locks you out from the system. In that case, boot e.g. from a USB drive and remove the `json` entries from `/etc/nsswitch`.
 
