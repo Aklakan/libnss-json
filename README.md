@@ -81,6 +81,8 @@ shadow:         compat
 #!/bin/sh
 (>&2 echo "$1")
 curl -L  https://raw.githubusercontent.com/Aklakan/libnss-json/master/yoda.json
+
+# use this line instead for the json-ld version
 #curl -L  https://raw.githubusercontent.com/Aklakan/libnss-json/master/yoda.jsonld
 ```
 
@@ -92,7 +94,7 @@ curl -L  https://raw.githubusercontent.com/Aklakan/libnss-json/master/yoda.json
 ```bash
 sudo apt-get install nscd
 ```
-* You will notice the differences immediately with the examples below.
+* You will notice the differences immediately with the examples above.
 
 
 ### JSON Models
