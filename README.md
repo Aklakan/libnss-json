@@ -3,7 +3,7 @@
 This repository contains the core `libnss-json`.
 
 ## You have been warned - don't blame me if you mess up your system!
-As of now, this is implementation that has only been tested on Ubuntu 16.04.
+As of now, this implementation has only been tested on Ubuntu 16.04.
 Feedback is very welcome in order to improve and battle-harden this module, however as of now, be aware that bugs in the software could either lock you out from your system, or grant access rights to people who shouldn't have them.
 
 
