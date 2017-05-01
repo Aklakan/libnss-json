@@ -17,7 +17,7 @@ Most prominently, user, group and password lookups are handled by the NSS.
 For details you may want to consult the [Wikipedia article](https://en.wikipedia.org/wiki/Name_Service_Switch).
 There are NSS modules for LDAP, Active Directory, MYSQL, Postgres, and whatnot, which all implement a certain set of C functions.
 The exercise of this project is to provide a simple extension point for connecting handlers written in arbitrary languages to the NSS.
-This project does that by simply delegating all NSS requests as *JSON documents* to a single *function* whose implementation is is expected to reply with an appropriate *JSON* document repsonse. Well, **or the implementation can be so dumb to just returns a JSON array of items and let nss-json pick the approriate item(s)**.
+This project does that by simply delegating all NSS requests as *JSON documents* to a single *function* whose implementation is is expected to reply with an appropriate *JSON* document repsonse. Well, **or the implementation can be so dumb to just returns a JSON array of items and let nss-json pick the approriate one(s)**.
 
 In short: Its JSON in / JSON out!
 
