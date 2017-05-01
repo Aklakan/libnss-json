@@ -31,7 +31,7 @@ curl a JSON file in a private GitHub repo.
 Whether this is a feasibile approach from security and performance perspectives has yet to be determined.
 
 ## Caching
-Output of `/etc/nss-json` is by default cached for 10 seconds. It can be changed by setting `CACHE_INTERVAL_IN_SEC` in [nss-json-impl](libnss-json/src/nss-json-impl.c).
+Output of `/etc/nss-json` is by default cached for 10 seconds. It can be changed by setting `CACHE_INTERVAL_IN_SEC` in [nss-json-impl.c](libnss-json/src/nss-json-impl.c).
 
 ## Building
 Enter the `libnss-json` folder.
