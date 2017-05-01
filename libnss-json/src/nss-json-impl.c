@@ -18,22 +18,40 @@
 
 /**
  * Read all data from fp into a buffer
+ * Allocs in increments of the buffer size
  *
- * It does unnecessary *allocs due to simplicity. Feel free to replace or improve.
  */
 char* read_data(FILE *fp) {
-    char buf[1024];
-    int n = 0;
-    char *p_result = malloc(1);
-    p_result[0] = '\0';
+    char buf[4096];
+    int i = 0;
+    int d;
+    int resultLen = sizeof(buf);
+    char *p_result = malloc(resultLen);
+    char *p_tmp;
+    
+    while (fgets(buf, sizeof(buf), fp) != NULL) {
+        d = strlen(buf);
 
-    while (fgets(buf, sizeof(buf) - 1, fp) != NULL) {
-        p_result = realloc(p_result, n + sizeof(buf));
+        if(i + d >= resultLen) {
+            // Below does ceiling ; i + d + 1 -> include terminating \0 char
+            resultLen = (1 + (((i + d + 1) - 1) / sizeof(buf))) * sizeof(buf);
+            p_tmp = realloc(p_result, resultLen);
+            if(p_tmp == NULL) {
+                free(p_result);
+                p_result = NULL;
+                break; 
+            }
+            p_result = p_tmp;
+        }
 
-        strncpy(&p_result[n], buf, sizeof(buf) - 1);
-
-        n += sizeof(buf) - 1;
+        strncpy(&p_result[i], buf, d);
+        i += d;
     }
+
+    if(p_result != NULL) {
+        p_result[i] = '\0';
+    }
+    //printf("data: %s", p_result);
 
     return p_result;
 }
@@ -63,7 +81,7 @@ int read_json(cJSON** outJson, const char * const cmd) {
         data = read_data(fp);
         result = WEXITSTATUS(pclose(fp));
         
-        //printf("Read Status / Response Buffer: %d / %s\n", result, data);
+        //printf("Read Status / Response Buffer: %s --- %d / %s\n", cmd, result, data);
         *outJson = cJSON_Parse(data);
         //printf("json: %d\n", *outJson);
 
@@ -82,7 +100,7 @@ enum nss_status _nss_json_handle_request(const cJSON * const requestJson, cJSON*
 
 //    printf("RequestJson: %s", rendered);
 
-    char buf[2048];
+    char buf[4096];
     // TODO Escape single quotes...
     // TODO Allocate buffer dynamically - use asprintf
     snprintf(buf, sizeof(buf), "%s '%s'", CFGFILE, rendered);
