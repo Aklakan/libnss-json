@@ -3,23 +3,35 @@
     "shell": "/bin/bash",
     "name": "yoda",
     "passwd": "foobar",
-    "@type": "User",
+    "http://example.org/server": "myserver",
     "gid": 10000,
-    "gecos:": "foobar",
+    "gecos": "foobar",
+    "@context": {
+      "member": {
+        "@container": "@set"
+      },
+      "@vocab": "http://example.org/nss/"
+    },
     "@id": "http://example.org/resource/user/Yoda",
-    "http://example.org/server": "qrowd",
+    "@type": "User",
     "dir": "/home/yoda",
     "uid": 10000
   },
   {
     "name": "yoda",
     "passwd": "yoda",
-    "http://example.org/server": "qrowd",
-    "members": [
-      "yoda",
-      "test"
+    "http://example.org/server": "myserver",
+    "member": [
+      "test",
+      "yoda"
     ],
     "gid": 10000,
+    "@context": {
+      "member": {
+        "@container": "@set"
+      },
+      "@vocab": "http://example.org/nss/"
+    },
     "@id": "http://example.org/resource/group/Yoda",
     "@type": "Group"
   }
