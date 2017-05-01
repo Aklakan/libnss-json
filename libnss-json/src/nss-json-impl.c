@@ -74,6 +74,7 @@ cJSON* performRequest(const char *url, const cJSON* requestJson, int includeRequ
 {
     cJSON* result = NULL;
     CURL *curl;
+    int status;
     struct string s;
     char *requestJsonStr;
 
@@ -81,8 +82,6 @@ cJSON* performRequest(const char *url, const cJSON* requestJson, int includeRequ
         requestJsonStr = cJSON_Print(requestJson);
     }
 
-
-    
     curl_global_init(CURL_GLOBAL_ALL);
     curl = curl_easy_init();
 
@@ -97,11 +96,13 @@ cJSON* performRequest(const char *url, const cJSON* requestJson, int includeRequ
 //  curl_easy_setopt(curl, CURLOPT_POST, 1);
 //  curl_easy_setopt(curl, CURLOPT_POSTFIELDS, "foo=bar&foz=baz");
 
-        curl_easy_perform(curl);
-        curl_easy_cleanup(curl);
+        status = curl_easy_perform(curl);
+        if(status == CURLE_OK) {
+            result = cJSON_Parse(s.ptr);
+            free(s.ptr);
+        }
 
-        result = cJSON_Parse(s.ptr);
-        free(s.ptr);
+        curl_easy_cleanup(curl);
     }
 
     if(includeRequestArg) {
