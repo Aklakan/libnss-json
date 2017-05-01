@@ -1,0 +1,16 @@
+#!/bin/bash
+
+(>&2 echo "$USER: $1")
+
+
+recacheIntervalInMin=1
+
+nssJsonImplCmd="/etc/nss-json-impl"
+cacheFile="/root/.cache/nss-json-cache.json"
+errorFile="/tmp/.nss-json-error.swp"
+
+[[ -f "$errorFile" ]] && [[ $(date +%s -r "$errorFile" ) -lt $(date +%s --date="$recacheIntervalInMin min ago") ]] && rm "$errorFile"
+[[ ! -f "$errorFile" ]] && [[ ! -f "$cacheFile" ||  $(date +%s -r "$cacheFile" ) -lt $(date +%s --date="$recacheIntervalInMin min ago") ]] && $nssJsonImplCmd "$1" > "$cacheFile"
+[[ $? != 0 ]] && touch "$errorFile"
+
+

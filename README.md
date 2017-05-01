@@ -8,7 +8,7 @@ Most prominently, user, group and password lookups are handled by the NSS.
 For details you may want to consult the [Wikipedia article](https://en.wikipedia.org/wiki/Name_Service_Switch).
 There are NSS modules for LDAP, Active Directory, MYSQL, Postgres, and whatnot, which all implement a certain set of C functions.
 The exercise of this project is to provide a simple extension point for connecting handlers written in arbitrary languages to the NSS.
-This project does that by simply delegating all NSS requests as *JSON documents* to a single *function* whose implementation is is expected to reply with an appropriate *JSON* document repsonse.
+This project does that by simply delegating all NSS requests as *JSON documents* to a single *C function* whose implementation is is expected to reply with an appropriate *JSON* document repsonse. The default backend sends to request to a specified URL.
 
 In fact, you can just return an arbitary JSON array, and nss-json will pick the appropriate ones.
 
@@ -16,15 +16,11 @@ In fact, you can just return an arbitary JSON array, and nss-json will pick the 
 As of now, this implementation has only been tested on Ubuntu 16.04.
 Feedback is very welcome in order to improve and battle-harden this module, however as of now, be aware that bugs in the software could either lock you out from your system, or grant access rights to people who shouldn't have them.
 
-## Known Issues
-* **Beware**: When using **python** for scripting `/etc/nss-json`, restarting Ubuntu or trying to resume from a locked screen locks you out from the system, and you may need to boot from e.g. an USB drive. This is probably due to differences in the python environments of the different users.
-
 
 ## How to use
-The module ships with an implementation which delegates all requests to the `/etc/nss-json` *executable*.
-The json request is passed as the only argument, and the output to STDOUT is parsed as JSON again. The process is expected to return 0 on success.
+The module ships with an implementation which delegates all requests to a URL configured in `/etc/nss-json.conf` via curl.
+The response is expected to be an appropriate JSON document.
 
-**Note, that all network security issues need to be handled by your /etc/nss-json implementation**.
 
 ## Building
 Enter the `libnss-json` folder.
@@ -40,24 +36,22 @@ If make yields an error, please report an issue.
 
 ### Enabling the service
 
-* Create a simple `/etc/nss-json` executable file which handles the requests. The following example allows the user 'yoda' to log in.
+* Create a simple `/etc/nss-json.conf` configuration. The following example allows the user 'yoda' to log in based on this publicly hosted json file.
+**Obviously, this is just an example, and you should change the config quickly**. The point is, you can now easily set up a web server which serves that url.
+
 
 ```bash
-#!/bin/sh
-# The following line prints out the argument $1 to STDERR
-(>&2 echo "$1")
+# The only mandatory parameter
+url = https://raw.githubusercontent.com/Aklakan/libnss-json/master/yoda.json
 
-# Just return JSON - libnss-json will pick out what matches its requests
-echo '[{ "name": "yoda", "passwd": "foobar", "uid":10000, "gid":10000, "gecos": "foobar", "dir": "/home/yoda", "shell": "/bin/bash" }, {"name": "yoda", "passwd": "foobar", "gid": 10000, "members": ["yoda"] } ]'
+# Enable debug output, such as that of the curl library.
+# Default: false
+verbose = true
+
+# Use false for serving a static JSON document. Use true for url requests to include a POST argument of the form request=<the request as json>
+# Default: false
+includeRequestArg = false
 ```
-
-* Make the file executable
-
-```bash
-sudo chmod 755 /etc/nss-json
-```
-
-* Note, that this file **must** be executable by all. If this file contains sensitive information (e.g. a password) you might be inclined to make it `511` (executable but neither read- nor writable), but this will not work for script languages where the interpreter reads the file under the user's rights!
 
 * Run the `target/main-test-nss-json` tool created by `make` to make sure everything is in place so far. **TODO** The test script assumes above setup, and half of the tests actually succeed if a fail is reported.
 
@@ -74,17 +68,6 @@ shadow:         compat
 ```
 
 * Try `sudo su yoda` - You should now be logged in as him. May the force be with you.
-
-* When feeling bold, you can now test logging in as `yoda` to your system using directly the example file hosted in this repo. **Be sure to turn that off quickly again!!!**
-
-```bash
-#!/bin/sh
-(>&2 echo "$1")
-curl -L  https://raw.githubusercontent.com/Aklakan/libnss-json/master/yoda.json
-
-# use this line instead for the json-ld version
-#curl -L  https://raw.githubusercontent.com/Aklakan/libnss-json/master/yoda.jsonld
-```
 
 ## Caching
 * Output of `/etc/nss-json` is within libnss-json by default cached for 10 seconds, controlled by `CACHE_INTERVAL_IN_SEC` in [nss-json-impl.c](libnss-json/src/nss-json-impl.c). However, the system usually relaunches `libnss-json` for its request in *much* shorter intervals.
@@ -154,55 +137,5 @@ time for x in {0..50}; do sudo su yoda -c 'echo "test"'; done
 | real | 0m0.331s | 0m3.624s | 0m0.836s |
 | user | 0m0.052s | 0m0.440s | 0m0.164s |
 | sys  | 0m0.040s | 0m0.480s | 0m0.260s |
-
-
-### Notes: What you should NOT do
-*This section needs cleaning up*
-
-* Don't use python scripts - as soon Ubuntu locks the screen or you reboot, there will be some change in the python environment throwing exceptions, and this locks you out from the system. In that case, boot e.g. from a USB drive and remove the `json` entries from `/etc/nsswitch`.
-
-```python
-#!/usr/bin/python
-
-import sys
-import json
-
-arg = sys.argv[1]
-x = json.loads(arg)
-
-# Lets allow yoda to log in
-if (x['request'] == 'getpwnam' and x['name'] == "yoda") or (x['request'] == 'getpwuid' and x['uid'] == 10000):
-  print '{"name": "yoda", "passwd": "foobar", "uid":10000, "gid":10000, "gecos": "foobar", "dir": "/home/yoda", "shell": "/bin/bash"}'
-elif(x['request'] == 'getgrnam' and x['name'] == "yoda") or (x['request'] == 'getgrgid' and x['gid'] == 10000):
-  print '{"name": "yoda", "passwd": "foobar", "gid": 10000, "members": ["yoda"] }'
-```
-
-Don't create a script that logs to a specific file - whenever you change a user with e.g. `sudo su foo`, the file will be written to as a different user,
-most likely provoking an access violation and causing troubles.
-
-* Create an example `nss-json` executable which logs all requests to `/tmp/nss-json-test.txt` by running the following commands:
-
-```bash
-echo 'echo "$0 was called $1" >> /tmp/nss-json-test.txt' | sudo tee -a /etc/nss-json
-sudo chmod +x /etc/nss-json
-```
-
-* When you run
-```bash
-cat /tmp/nss-json-test.txt
-```
-
-You should see output such as:
-
-```
-/etc/nss-json got called with {
-        "request":      "getwpnam",
-        "name": "myusername"
-}
-/etc/nss-json got called with {
-        "request":      "getwpnam",
-        "name": "root"
-}
-```
 
 
