@@ -10,10 +10,10 @@ u:Yoda
   nss:passwd "foobar" ;
   nss:uid 10000 ;
   nss:gid 10000 ;
-  nss:gecos: "foobar" ;
+  nss:gecos "foobar" ;
   nss:dir "/home/yoda" ;
   nss:shell "/bin/bash" ;
-  ex:server "qrowd" ;
+  ex:server "myserver" ;
   .
 
 g:Yoda
@@ -22,7 +22,7 @@ g:Yoda
   nss:passwd "yoda" ;
   nss:gid 10000 ;
   nss:member "yoda", "test" ;
-  ex:server "qrowd" ;
+  ex:server "myserver" ;
   .
   
   
