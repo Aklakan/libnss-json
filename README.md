@@ -1,11 +1,9 @@
 # Name Switch Service (NSS) JSON Binding Module
 
-
-This repository contains the core `libnss-json` implementation together with a small plugin that - in addition to JSON - enables connecting RDF and SPARQL data sources to the NSS (uses simply JSON-LD context for the  RDF-JSON binding).
-
+This repository contains the core `libnss-json`.
 
 ## You have been warned - don't blame me if you mess up your system!
-As of now, this is a prototype implementation in 'works for me' state on my Ubuntu 16.04 machine.
+As of now, this is implementation that has only been tested on Ubuntu 16.04.
 Feedback is very welcome in order to improve and battle-harden this module, however as of now, be aware that bugs in the software could either lock you out from your system, or grant access rights to people who shouldn't have them.
 
 
@@ -19,7 +17,7 @@ Most prominently, user, group and password lookups are handled by the NSS.
 For details you may want to consult the [Wikipedia article](https://en.wikipedia.org/wiki/Name_Service_Switch).
 There are NSS modules for LDAP, Active Directory, MYSQL, Postgres, and whatnot, which all implement a certain set of C functions.
 The exercise of this project is to provide a simple extension point for connecting handlers written in arbitrary languages to the NSS.
-This project does that by simply delegating all NSS requests as *JSON documents* to a single *function* whose implementation is is expected to reply with an appropriate *JSON* document repsonse. Well, **or the implementation can be so dumb to just returns a JSON array of items and let the caller pick the approriate item**.
+This project does that by simply delegating all NSS requests as *JSON documents* to a single *function* whose implementation is is expected to reply with an appropriate *JSON* document repsonse. Well, **or the implementation can be so dumb to just returns a JSON array of items and let nss-json pick the approriate item(s)**.
 
 In short: Its JSON in / JSON out!
 
@@ -31,6 +29,9 @@ curl a JSON file in a private GitHub repo.
 
 
 Whether this is a feasibile approach from security and performance perspectives has yet to be determined.
+
+## Caching
+Output of `/etc/nss-json` is by default cached for 10 seconds. It can be changed by setting `CACHE_INTERVAL_IN_SEC` in [nss-json-impl](libnss-json/src/nss-json-impl.c).
 
 ## Building
 Enter the `libnss-json` folder.
@@ -125,17 +126,17 @@ To be stated; will be something very liberal that just asks for an acknowledgeme
 
 
 ## Performance
-* Login throughput: Disabled `nss-json` in `nsswitch` vs enabled using a bash script to echo's the yoda user - without caching.
-As expected, the performance drops by a magnitude.
+* Login performance of `nss-json` under 50 logins: disabled vs uncached vs 10 second cache.
+
 ```bash
 time for x in {0..50}; do sudo su yoda -c 'echo "test"'; done
 ```
 
-|      | disabled | bash echo|
-| ---- | -------- | -------- |
-| real | 0m0.331s | 0m3.624s |
-| user | 0m0.052s | 0m0.440s |
-| sys  | 0m0.040s | 0m0.480s |
+|      | disabled | uncached | cache10  |
+| ---- | -------- | -------- | -------- |
+| real | 0m0.331s | 0m3.624s | 0m0.836s |
+| user | 0m0.052s | 0m0.440s | 0m0.164s |
+| sys  | 0m0.040s | 0m0.480s | 0m0.260s |
 
 
 ### Notes: What you should NOT do

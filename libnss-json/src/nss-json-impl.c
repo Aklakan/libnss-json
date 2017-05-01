@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <string.h>
 
+#include <time.h>
 #include <malloc.h>
 #include <nss.h>
 //#include <errno.h>
@@ -12,6 +13,7 @@
 
 
 #define CFGFILE "/etc/nss-json"
+#define CACHE_INTERVAL_IN_SEC 10
 
 
 
@@ -75,7 +77,6 @@ int read_json(cJSON** outJson, const char * const cmd) {
     if (fp == NULL) {
         result = 1;
         //printf("Failed to run command\n");
-        //exit(1);
     } else {
 
         data = read_data(fp);
@@ -92,15 +93,13 @@ int read_json(cJSON** outJson, const char * const cmd) {
 }
 
 
-enum nss_status _nss_json_handle_request(const cJSON * const requestJson, cJSON** responseJson) {
+enum nss_status delegate(const cJSON * const requestJson, cJSON** responseJson) {
     enum nss_status result;
     int exitCode;
+    char buf[4096];
     // Render the requestJson as a string and pass it to the script
     char *rendered = cJSON_Print(requestJson);
 
-//    printf("RequestJson: %s", rendered);
-
-    char buf[4096];
     // TODO Escape single quotes...
     // TODO Allocate buffer dynamically - use asprintf
     snprintf(buf, sizeof(buf), "%s '%s'", CFGFILE, rendered);
@@ -110,11 +109,41 @@ enum nss_status _nss_json_handle_request(const cJSON * const requestJson, cJSON*
     exitCode = read_json(responseJson, buf);
     result = exitCode == 0 ? NSS_STATUS_SUCCESS : NSS_STATUS_UNAVAIL;
 
-//    rendered = cJSON_Print(*responseJson);
-//    printf("ResponseJson: %s", rendered);
-//    free(rendered);
-
+    // rendered = cJSON_Print(*responseJson);
+    // printf("ResponseJson: %s", rendered);
+    // free(rendered);
 
     return result;
 }
+
+
+static int firstRun = 1;
+static clock_t before;
+static cJSON* jsonCache = NULL;
+static enum nss_status retvalCache = 0;
+
+enum nss_status _nss_json_handle_request(const cJSON * const requestJson, cJSON** responseJson) {
+
+    clock_t now = clock();
+    clock_t elapsed;
+    if(firstRun) {
+        elapsed = CACHE_INTERVAL_IN_SEC;
+        firstRun = 0;
+    } else {
+        elapsed = (double)(now - before) / CLOCKS_PER_SEC;
+    }
+
+    if(elapsed >= CACHE_INTERVAL_IN_SEC) {
+        // printf("RECACHING");
+        cJSON_Delete(jsonCache);
+        jsonCache = NULL;
+        retvalCache = delegate(requestJson, &jsonCache);
+        before = clock();
+    }
+
+    *responseJson = cJSON_Duplicate(jsonCache, 1);
+
+    return  retvalCache;
+}
+
 
