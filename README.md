@@ -127,12 +127,12 @@ To be stated; will be something very liberal that just asks for an acknowledgeme
 ## Performance
 * Login throughput: Disabled `nss-json` in `nsswitch` vs enabled using a bash script to echo's the yoda user - without caching.
 As expected, the performance drops by a magnitude.
-```
+```bash
 time for x in {0..50}; do sudo su yoda -c 'echo "test"'; done
 ```
 
 |      | disabled | bash echo|
-------------------------------
+| ---- | -------- | -------- |
 | real | 0m0.331s | 0m3.624s |
 | user | 0m0.052s | 0m0.440s |
 | sys  | 0m0.040s | 0m0.480s |
