@@ -30,19 +30,6 @@ curl a JSON file in a private GitHub repo.
 
 Whether this is a feasibile approach from security and performance perspectives has yet to be determined.
 
-## Caching
-* Output of `/etc/nss-json` is within libnss-json by default cached for 10 seconds. It can be changed by setting `CACHE_INTERVAL_IN_SEC` in [nss-json-impl.c](libnss-json/src/nss-json-impl.c).
-
-However, the system relaunches `libnss-json` for its request in much shorter intervals.
-
-* Installing the _Name Service Caching Daemon_ significantly reduces the number of invocations to `/etc/nss-json`.
-
-```bash
-sudo apt-get install nscd
-```
-* You will notice the differences immediately with the examples below.
-
-
 ## Building
 Enter the `libnss-json` folder.
 
@@ -98,6 +85,17 @@ shadow:         compat
 (>&2 echo "$1")
 curl -L  https://raw.githubusercontent.com/Aklakan/libnss-json/master/yoda.json
 ```
+
+## Caching
+* Output of `/etc/nss-json` is within libnss-json by default cached for 10 seconds, controlled by `CACHE_INTERVAL_IN_SEC` in [nss-json-impl.c](libnss-json/src/nss-json-impl.c). However, the system usually relaunches `libnss-json` for its request in *much* shorter intervals.
+
+* Installing the _Name Service Caching Daemon_ significantly reduces the number of invocations to `/etc/nss-json`.
+
+```bash
+sudo apt-get install nscd
+```
+* You will notice the differences immediately with the examples below.
+
 
 ### JSON Models
 The schema of the JSON documents has yet to be documented - please look at the source files for now; essentially the schemas are similar to the system structs, but
