@@ -31,7 +31,17 @@ curl a JSON file in a private GitHub repo.
 Whether this is a feasibile approach from security and performance perspectives has yet to be determined.
 
 ## Caching
-Output of `/etc/nss-json` is by default cached for 10 seconds. It can be changed by setting `CACHE_INTERVAL_IN_SEC` in [nss-json-impl.c](libnss-json/src/nss-json-impl.c).
+* Output of `/etc/nss-json` is within libnss-json by default cached for 10 seconds. It can be changed by setting `CACHE_INTERVAL_IN_SEC` in [nss-json-impl.c](libnss-json/src/nss-json-impl.c).
+
+However, the system relaunches `libnss-json` for its request in much shorter intervals.
+
+* Installing the _Name Service Caching Daemon_ significantly reduces the number of invocations to `/etc/nss-json`.
+
+```bash
+sudo apt-get install nscd
+```
+* You will notice the differences immediately with the examples below.
+
 
 ## Building
 Enter the `libnss-json` folder.
@@ -50,6 +60,8 @@ If make yields an error, please report an issue.
 
 ```bash
 #!/bin/sh
+# The following line prints out the argument $1 to STDERR
+(>&2 echo "$1")
 
 # Just return JSON - libnss-json will pick out what matches its requests
 echo '[{ "name": "yoda", "passwd": "foobar", "uid":10000, "gid":10000, "gecos": "foobar", "dir": "/home/yoda", "shell": "/bin/bash" }, {"name": "yoda", "passwd": "foobar", "gid": 10000, "members": ["yoda"] } ]'
@@ -79,6 +91,13 @@ shadow:         compat
 
 * Try `sudo su yoda` - You should now be logged in as him. May the force be with you.
 
+* When feeling bold, you can now test logging in as `yoda` to your system using directly the example file hosted in this repo. **Be sure to turn that off quickly again!!!**
+
+```bash
+#!/bin/sh
+(>&2 echo "$1")
+curl -L  https://raw.githubusercontent.com/Aklakan/libnss-json/master/yoda.json
+```
 
 ### JSON Models
 The schema of the JSON documents has yet to be documented - please look at the source files for now; essentially the schemas are similar to the system structs, but
