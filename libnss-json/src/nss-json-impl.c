@@ -214,8 +214,16 @@ enum nss_status delegate(const cJSON * const requestJson, cJSON** responseJson) 
     int includeRequestArg = strcasecmp(getcfg("includeRequestArg"), "true") == 0;
     int verbose = strcasecmp(getcfg("verbose"), "true") == 0;
 
-    *responseJson = performRequest(url, requestJson, includeRequestArg, verbose, 0);
-    result = responseJson == NULL ? NSS_STATUS_UNAVAIL : NSS_STATUS_SUCCESS;
+    if(strcmp(url, "") == 0) {
+        if(verbose) {
+            fprintf(stderr, "nss-json: No url specified, therefore faking empty JSON array response\n");
+        }
+        *responseJson = cJSON_CreateArray();
+        result = NSS_STATUS_SUCCESS;
+    } else {
+        *responseJson = performRequest(url, requestJson, includeRequestArg, verbose, 0);
+        result = responseJson == NULL ? NSS_STATUS_UNAVAIL : NSS_STATUS_SUCCESS;
+    }
 
     cleanupconfig();
     

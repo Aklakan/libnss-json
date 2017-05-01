@@ -231,8 +231,8 @@ int performTestRun() {
 
 int testForMemoryLeaks() {
     // Endless loop for detecting memory leaks
-    // for(;;) { performTestRun(); }
-    performTestRun();
+    for(;;) { performTestRun(); }
+    //performTestRun();
 }
 
 int main(int argc, char *argv[]) {
