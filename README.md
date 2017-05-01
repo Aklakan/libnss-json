@@ -124,6 +124,20 @@ Source code is largely derived from this [nss-pgsql module](https://github.com/j
 To be stated; will be something very liberal that just asks for an acknowledgement.
 
 
+## Performance
+* Login throughput: Disabled `nss-json` in `nsswitch` vs enabled using a bash script to echo's the yoda user - without caching.
+As expected, the performance drops by a magnitude.
+```
+time for x in {0..50}; do sudo su yoda -c 'echo "test"'; done
+```
+
+|      | disabled | bash echo|
+------------------------------
+| real | 0m0.331s | 0m3.624s |
+| user | 0m0.052s | 0m0.440s |
+| sys  | 0m0.040s | 0m0.480s |
+
+
 ### Notes: What you should NOT do
 
 * Don't use python scripts - as soon Ubuntu locks the screen or you reboot, there will be some change in the python environment throwing exceptions, and this locks you out from the system. In that case, boot e.g. from a USB drive and remove the `json` entries from `/etc/nsswitch`.
